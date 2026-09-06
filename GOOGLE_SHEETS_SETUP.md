@@ -8,7 +8,7 @@
 6. Copy the Web app URL. Create `.env.local` from `.env.example` and set:
 
    ```env
-   VITE_GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycbyIvnUWuGbNOtjnhMvVJWB2OOdGtfTzSp980J8gjdZxsvmPshSoKLaGSvAGJSgXHxm5/exec
+   VITE_GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycbw9N-0xSorYmFgLWP4yEvZ-Y5wWkRfeYJLwtG-RiQAOzkSIzWBgYqBfkgY7sHcYSoFP/exec
    ```
 
 7. Restart `npm run dev` or rebuild the site.

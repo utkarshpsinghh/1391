@@ -1,0 +1,7 @@
+# Dependencies are installed fresh by Vercel/CI for the target operating system.
+node_modules/
+.npm-cache/
+
+# Build artifacts and local configuration
+dist/
+.env.local

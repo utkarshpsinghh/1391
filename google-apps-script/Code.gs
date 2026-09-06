@@ -40,8 +40,12 @@ function doPost(event) {
       payload.playerName || '',
       payload.playerId || '',
       payload.power || '',
-      payload.stats || '',
       payload.currentKingdom || '',
+      payload.currentAlliance || '',
+      payload.tgCenterLevel || '',
+      payload.archersLevel || '',
+      payload.infantryLevel || '',
+      payload.cavalryLevel || '',
       payload.preferredAlliance || '',
       payload.preferredEventTime || '',
       payload.playstyle || '',
@@ -67,7 +71,7 @@ function hasRecentDuplicate_(sheet, payload) {
   const cutoff = Date.now() - DUPLICATE_WINDOW_HOURS * 60 * 60 * 1000;
   return rows.some(function (row) {
     const submittedAt = new Date(row[0]).getTime();
-    const existingId = normalize_(row[2]) || (normalize_(row[1]) + '|' + normalize_(row[9]));
+    const existingId = normalize_(row[2]) || (normalize_(row[1]) + '|' + normalize_(row[10]));
     return submittedAt >= cutoff && existingId === identifier;
   });
 }
@@ -82,12 +86,13 @@ function getEnquiriesSheet_() {
   if (!sheet) {
     sheet = workbook.insertSheet(SHEET_NAME);
     sheet.appendRow([
-      'Submitted at', 'Player name', 'Player ID', 'Power', 'FC / Key stats',
-      'Current kingdom', 'Preferred alliance', 'Preferred event time',
+      'Submitted at', 'Player name', 'Player ID', 'Power', 'Current kingdom',
+      'Current alliance', 'TG Center level', 'Archers level', 'Infantry level', 'Cavalry level',
+      'Preferred alliance', 'Preferred event time',
       'Playstyle', 'Discord username', 'Message'
     ]);
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, 11).setFontWeight('bold');
+    sheet.getRange(1, 1, 1, 15).setFontWeight('bold');
   }
   return sheet;
 }
