@@ -1,0 +1,8 @@
+export type Alliance={id:string;description:string;contacts:{name:string;playerId:string}[];events:{bear:string[];vikings:string[];swordland:string[]};color:string;crest:string;playstyle:string};
+export const alliances:Alliance[]=[
+ {id:'HOT',description:'Warm welcome. Serious fun.',contacts:[{name:'Sally',playerId:'2088-85630'}],events:{bear:['00:30','16:00'],vikings:['01:00','16:30'],swordland:['02:00','12:00']},color:'#bd4c2d',crest:'✦',playstyle:'Active · Friendly · Competitive'},
+ {id:'VIK',description:'Organised, active and battle-ready.',contacts:[{name:'Sigurd',playerId:'2027-36204'}],events:{bear:['00:30','16:30'],vikings:['19:00'],swordland:['02:00','19:00']},color:'#315d93',crest:'ᛉ',playstyle:'Active · Battle-ready · Organised'},
+ {id:'GRF',description:'A balanced home for active players.',contacts:[{name:'Rigor',playerId:'1973-43313'},{name:'Madara Uchiha',playerId:'2041-28952'}],events:{bear:['14:00','21:00'],vikings:['14:00'],swordland:['14:00','19:00']},color:'#5f873b',crest:'❖',playstyle:'Active · Balanced · Social'},
+ {id:'MAD',description:'Competitive spirit with a chaotic charm.',contacts:[{name:'Valkyrie',playerId:'2054-39578'},{name:'Ernie',playerId:'2050-79469'}],events:{bear:['02:30','20:00'],vikings:['01:00','20:00'],swordland:['02:00','19:00']},color:'#bd681a',crest:'⚡',playstyle:'Competitive · Active · War-focused'},
+ {id:'SDB',description:'Find your squad and settle in.',contacts:[{name:'Maddawg',playerId:'2027-20532'}],events:{bear:['12:00','18:00'],vikings:['02:00','13:00'],swordland:['02:00','12:00']},color:'#76518d',crest:'☾',playstyle:'Social · Friendly · Active'}];
+export const byId=(id?:string)=>alliances.find(a=>a.id===id?.toUpperCase());
