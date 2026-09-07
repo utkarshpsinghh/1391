@@ -12,6 +12,7 @@ const nav=[
   ['/transfer','Transfer',ScrollText],
   ['/schedule','Schedule',Clock3],
   ['/records','KVK Records',Trophy],
+  ['/team','Our Team',Users],
   ['/kingdom','News',Castle],
   ['/community','Community',Users],
   ['/faq','FAQ',HelpCircle]
@@ -462,8 +463,7 @@ function Transfer(){
 
         <div className="important">
           <b>IMPORTANT</b><br/>
-          Transfer requirements and kingdom rules may change.
-          Always confirm the latest information with alliance leadership.
+          Your transfer is confirmed only after you have been contacted and verified by one of our representatives. 
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -552,13 +552,14 @@ function Schedule(){
 
 function Records(){
   const matches=[
-    ['1400','WIN','LOSS'],
-    ['1396','WIN','WIN'],
-    ['1387','WIN','WIN'],
-    ['1410','WIN','WIN'],
-    ['1404','WIN','LOSS'],
-    ['1386','WIN','WIN'],
-    ['1419','WIN','WIN']
+    ['08','1385','ONGOING','ONGOING'],
+    ['07','1419','WIN','WIN'],
+    ['06','1386','WIN','WIN'],
+    ['05','1404','WIN','LOSS'],
+    ['04','1410','WIN','WIN'],
+    ['03','1387','WIN','WIN'],
+    ['02','1396','WIN','WIN'],
+    ['01','1400','WIN','LOSS']
   ];
 
   return <>
@@ -603,12 +604,12 @@ function Records(){
           <span>BATTLE</span>
         </div>
 
-        {matches.map(([opponent,prep,battle],i)=>(
+        {matches.map(([kvk,opponent,prep,battle])=>(
           <div
             className="record-row"
-            key={`${opponent}-${i}`}
+            key={`kvk-${kvk}-${opponent}`}
           >
-            <b>KVK {String(i+1).padStart(2,'0')}</b>
+            <b>KVK {kvk}</b>
             <span className="opponent">KINGDOM {opponent}</span>
             <span className={`result ${prep.toLowerCase()}`}>
               {prep}
@@ -696,7 +697,7 @@ function Apply(){
 
     if(!endpoint){
       setErr(
-        'The kingdom ledger is not connected yet. Add your Google Apps Script Web App URL to .env.local, then restart the site.'
+        'The kingdom ledger is not connected yet.'
       );
       return;
     }
@@ -1146,6 +1147,242 @@ function FAQ(){
   </>
 }
 
+function TeamMemberCard({
+  name,
+  playerId,
+  role,
+  crest='♜',
+  rank='R5',
+  alliance,
+  pfp
+}:{
+  name:string;
+  playerId:string;
+  role:string;
+  crest?:string;
+  rank?:string;
+  alliance?:string;
+  pfp?:string;
+}){
+  return (
+    <article className="team-id-card compact-team-card">
+      <div className="team-pfp-wrap">
+        {pfp ? (
+          <img className="team-pfp" src={pfp} alt={`${name} profile`} />
+        ) : (
+          <div className="team-pfp-placeholder">{crest}</div>
+        )}
+      </div>
+
+      <div className="team-id-main compact-team-main">
+        <div className="team-member-line">
+          <h3>{name}</h3>
+          {alliance&&<span className="team-member-alliance">{alliance}</span>}
+          <span className="team-member-role">{role}</span>
+        </div>
+
+        <div className="team-player-id compact-player-id">
+          <span>PLAYER ID</span>
+          <strong>{playerId}</strong>
+        </div>
+      </div>
+
+      <div className="team-id-rank">{rank}</div>
+      <div className="team-id-seal">✦</div>
+    </article>
+  );
+}
+
+function TeamSection({
+  title,
+  subtitle,
+  members
+}:{
+  title:string;
+  subtitle:string;
+  members:{
+    name:string;
+    playerId:string;
+    role:string;
+    crest?:string;
+    rank?:string;
+    alliance?:string;
+    pfp?:string;
+  }[];
+}){
+  return (
+    <section className="team-section">
+      <div className="team-section-heading">
+        <span>✦</span>
+        <div>
+          <small>KINGDOM 1391</small>
+          <h2>{title}</h2>
+          <p>{subtitle}</p>
+        </div>
+        <span>✦</span>
+      </div>
+
+      <div className="team-grid">
+        {members.map((member,index)=>(
+          <TeamMemberCard
+            key={`${member.playerId}-${index}`}
+            {...member}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Team(){
+  /*
+   * EDIT ONLY THE ARRAYS BELOW WHEN YOU ADD YOUR REAL TEAM MEMBERS.
+   *
+   * PERMANENT PFPs:
+   * Put your images inside: /public/team/
+   * Example: /public/team/king-1.jpg
+   * Then set pfp:'/team/king-1.jpg' in the matching person below.
+   *
+   * GitHub/Vercel will serve these images to every visitor.
+   */
+
+  const transferManagers=[
+    {
+      name:'[MAD] Ernie',
+      playerId:'205079469',
+      role:'TRANSFER MANAGER',
+      pfp:'https://jeabslist.com/avatars/a24249d7b04d0619c379774a0d7f930f.png',
+      crest:'⚔',
+      rank:'TM'
+    },
+
+    {
+      name:'[VIK] Hayate Beeshida',
+      playerId:'203818078',
+      role:'TRANSFER MANAGER',
+      pfp:'https://jeabslist.com/avatars/01892610373cfd0ad24bfd1b7f91f1b1.png',
+      crest:'⚔',
+      rank:'TM'
+    }
+
+
+
+  ];
+
+  const allianceR5s=[
+    { name:'Bee of ᴰᴱᴬᵀᴴ', playerId:'205063171', role:'', alliance:alliances[0]?.id||'ALLIANCE 1', pfp:'https://jeabslist.com/avatars/9bf0135dbf3ddcebb85fe1a76cb0914d.png', crest:'🛡', rank:'R5' },
+    { name:'Sigurd McSting', playerId:'202736204', role:'', alliance:alliances[1]?.id||'ALLIANCE 2', pfp:'https://jeabslist.com/avatars/1eaa46ec192edb7bb64bce3161ca8b2f.png', crest:'🛡', rank:'R5' },
+    { name:'EhMoose', playerId:'207314613', role:'', alliance:alliances[2]?.id||'ALLIANCE 3', pfp:'https://jeabslist.com/avatars/abe304ebb7e61fe33cbc717b1f98b962.png', crest:'🛡', rank:'R5' },
+    { name:'valkyrie', playerId:'205439578', role:'', alliance:alliances[3]?.id||'ALLIANCE 4', pfp:'https://jeabslist.com/avatars/5e591f24e3e7e4437b79eb49218a2fad.png', crest:'🛡', rank:'R5' },
+    { name:'Maddawgg', playerId:'202720532', role:'', alliance:alliances[4]?.id||'ALLIANCE 5', pfp:'https://jeabslist.com/avatars/014311400002621eb4bb048711b9bd7f.png', crest:'🛡', rank:'R5' }
+  ];
+
+  const staff=[
+    {
+      name:'[HOT] MoonLight',
+      playerId:'202703263',
+      role:'',
+      pfp:'https://jeabslist.com/assets/preset_avatars/1031.png',
+      crest:'✦',
+      rank:'STAFF'
+    },
+
+    {
+      name:'[HOT] Sally',
+      playerId:'208885630',
+      role:'',
+      pfp:'https://jeabslist.com/avatars/ef7b38b33b02bfc2a7c118a01251ada7.png',
+      crest:'✦',
+      rank:'STAFF'
+    },
+
+    {
+      name:'[VIK] Crab',
+      playerId:'204751680',
+      role:'',
+      pfp:'https://jeabslist.com/avatars/f9f1ffd19e83e76327ef9f1fa04a2b19.png',
+      crest:'✦',
+      rank:'STAFF'
+    },
+
+    {
+      name:'[GRF] ᴍᴀᴅᴀʀᴀ々ᴜᴄʜɪʜᴀ',
+      playerId:'204128952',
+      role:'',
+      pfp:'https://jeabslist.com/avatars/ac0c34ec8c1b9c4b0742b785423255b5.png',
+      crest:'✦',
+      rank:'STAFF'
+    },
+
+    {
+      name:'[HOT] Chucky',
+      playerId:'202638148',
+      role:'',
+      pfp:'https://jeabslist.com/avatars/1d4ae55c730698bbaca6f355ae1a7291.png',
+      crest:'✦',
+      rank:'STAFF'
+    },
+
+    {
+      name:'nenedono',
+      playerId:'kimetakara',
+      role:'DISCORD',
+      pfp:'https://cdn.discordapp.com/avatars/673514649852968977/dbe93e1a3b27079e8eec9bca22781462.png?size=3072',
+      crest:'✦',
+      rank:'STAFF'
+    }
+
+
+
+  ];
+
+  return (
+    <>
+      <PageHero
+        title="THE K1391\nTEAM"
+        subtitle="Meet the people who help guide, manage and welcome our kingdom."
+      />
+
+      <section className="team-page wrap">
+        <div className="team-intro parchment">
+          <span className="corner">✦</span>
+          <h2>THE PEOPLE BEHIND THE KINGDOM</h2>
+          <p>
+            From transfer coordination to alliance leadership,
+            our team helps keep Kingdom 1391 organised, welcoming
+            and ready for the next chapter.
+          </p>
+          <div className="team-intro-tools">♜ &nbsp; ⚔ &nbsp; 🛡 &nbsp; ✦</div>
+        </div>
+
+        <TeamSection
+          title="TRANSFER MANAGERS"
+          subtitle="The people helping travellers find their place in K1391."
+          members={transferManagers}
+        />
+
+        <TeamSection
+          title="ALLIANCE R5s"
+          subtitle="The R5 leaders representing the five alliances of K1391."
+          members={allianceR5s}
+        />
+
+        <TeamSection
+          title="STAFF"
+          subtitle="The people working behind the scenes to support the kingdom."
+          members={staff}
+        />
+
+        <div className="team-footer-note">
+          <span>✦</span>
+          <p>Player IDs are displayed to help travellers identify the correct Kingdom 1391 representative in-game.</p>
+          <span>✦</span>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function NotFound(){
   return <section className="not-found wrap">
     <div className="parchment">
@@ -1170,6 +1407,7 @@ function App(){
         <Route path="/transfer" element={<Transfer/>}/>
         <Route path="/schedule" element={<Schedule/>}/>
         <Route path="/records" element={<Records/>}/>
+        <Route path="/team" element={<Team/>}/>
         <Route path="/apply" element={<Apply/>}/>
         <Route path="/kingdom" element={<Kingdom/>}/>
         <Route path="/community" element={<Community/>}/>
