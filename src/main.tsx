@@ -1070,9 +1070,7 @@ function Community(){
             JOIN DISCORD <ArrowRight size={18}/>
           </a>
 
-          <small>
-            Opens the Kingdom 1391 Discord community.
-          </small>
+         
         </div>
       </div>
     </section>
