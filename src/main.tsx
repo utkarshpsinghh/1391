@@ -1330,6 +1330,24 @@ function Team(){
       pfp:'https://cdn.discordapp.com/avatars/673514649852968977/dbe93e1a3b27079e8eec9bca22781462.png?size=3072',
       crest:'✦',
       rank:'STAFF'
+    },
+
+    {
+      name:'[GRF] EhM4tko',
+      playerId:'209231997',
+      role:'',
+      pfp:'https://jeabslist.com/avatars/c7c7bf05d19d4eddc4eec6399c07ef02.png',
+      crest:'✦',
+      rank:'STAFF'
+    },
+
+    {
+      name:'[GRF] LovinᴾᴵᴳDaddy',
+      playerId:'183851500',
+      role:'',
+      pfp:'https://jeabslist.com/avatars/cf542b6c9df38d893ffa69df88d78a76.png',
+      crest:'✦',
+      rank:'STAFF'
     }
 
 
