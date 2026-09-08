@@ -1270,7 +1270,7 @@ function Team(){
   const allianceR5s=[
     { name:'Bee of ᴰᴱᴬᵀᴴ', playerId:'205063171', role:'', alliance:alliances[0]?.id||'ALLIANCE 1', pfp:'https://jeabslist.com/avatars/9bf0135dbf3ddcebb85fe1a76cb0914d.png', crest:'🛡', rank:'R5' },
     { name:'Sigurd McSting', playerId:'202736204', role:'', alliance:alliances[1]?.id||'ALLIANCE 2', pfp:'https://jeabslist.com/avatars/1eaa46ec192edb7bb64bce3161ca8b2f.png', crest:'🛡', rank:'R5' },
-    { name:'EhMoose', playerId:'207314613', role:'', alliance:alliances[2]?.id||'ALLIANCE 3', pfp:'https://jeabslist.com/avatars/abe304ebb7e61fe33cbc717b1f98b962.png', crest:'🛡', rank:'R5' },
+    { name:'EhMoose', playerId:'207314613', role:'', alliance:alliances[2]?.id||'ALLIANCE 3', pfp:'https://jeabslist.com/avatars/cfe3a4cdf0928f712e3b45eec18d44d0.png', crest:'🛡', rank:'R5' },
     { name:'valkyrie', playerId:'205439578', role:'', alliance:alliances[3]?.id||'ALLIANCE 4', pfp:'https://jeabslist.com/avatars/5e591f24e3e7e4437b79eb49218a2fad.png', crest:'🛡', rank:'R5' },
     { name:'Maddawgg', playerId:'202720532', role:'', alliance:alliances[4]?.id||'ALLIANCE 5', pfp:'https://jeabslist.com/avatars/014311400002621eb4bb048711b9bd7f.png', crest:'🛡', rank:'R5' }
   ];
