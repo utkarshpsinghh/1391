@@ -573,14 +573,14 @@ function Records(){
         <div>
           <Trophy/>
           <span>PREPARATION PHASE</span>
-          <strong>7–0</strong>
+          <strong>8–0</strong>
           <small>UNDEFEATED</small>
         </div>
 
         <div>
           <Shield/>
           <span>BATTLE PHASE</span>
-          <strong>5–2</strong>
+          <strong>6–2</strong>
           <small>HARD-FOUGHT</small>
         </div>
       </div>
