@@ -552,7 +552,7 @@ function Schedule(){
 
 function Records(){
   const matches=[
-    ['08','1385','ONGOING','UPCOMING'],
+    ['08','1385','ONGOING','ONGOING'],
     ['07','1419','WIN','WIN'],
     ['06','1386','WIN','WIN'],
     ['05','1404','WIN','LOSS'],
