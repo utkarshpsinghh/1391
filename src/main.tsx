@@ -1246,10 +1246,10 @@ function Team(){
 
   const transferManagers=[
     {
-      name:'[MAD] Ernie',
-      playerId:'205079469',
+      name:'[HOT] Sally',
+      playerId:'208885630',
       role:'TRANSFER MANAGER',
-      pfp:'https://jeabslist.com/avatars/a24249d7b04d0619c379774a0d7f930f.png',
+      pfp:'https://jeabslist.com/avatars/ef7b38b33b02bfc2a7c118a01251ada7.png',
       crest:'⚔',
       rank:'TM'
     },
@@ -1286,10 +1286,10 @@ function Team(){
     },
 
     {
-      name:'[HOT] Sally',
-      playerId:'208885630',
+      name:'[MAD] Ernie',
+      playerId:'205079469',
       role:'',
-      pfp:'https://jeabslist.com/avatars/ef7b38b33b02bfc2a7c118a01251ada7.png',
+      pfp:'https://jeabslist.com/avatars/a24249d7b04d0619c379774a0d7f930f.png',
       crest:'✦',
       rank:'STAFF'
     },
