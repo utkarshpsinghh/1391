@@ -155,7 +155,8 @@ function EventRows({a}:{a:Alliance}){
     {[
       ['🐻','Bear',a.events.bear],
       ['🛡','Vikings',a.events.vikings],
-      ['⚔','Swordland',a.events.swordland]
+      ['⚔','Swordland',a.events.swordland],
+      ['⚔','3Alliance',a.events.threeAlliance]
     ].map(([icon,n,t])=>(
       <div key={String(n)}>
         <span>{icon}</span>
@@ -495,7 +496,8 @@ function Schedule(){
   const groups=[
     ['🐻','BEAR','bear'],
     ['🛡','VIKINGS','vikings'],
-    ['⚔','SWORDLAND & 3ALLIANCE','swordland']
+    ['⚔','SWORDLAND','swordland'],
+    ['⚔','3ALLIANCE','threeAlliance']
   ] as const;
 
   return <>
