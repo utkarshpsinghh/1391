@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { KingdomData, Alliance, emptyKingdomData, emptySettings } from '../data';
+import { GOOGLE_APPS_SCRIPT_URL } from '../config';
 
 interface KingdomContextType {
   data: KingdomData;
@@ -9,7 +10,7 @@ interface KingdomContextType {
   getAlliance: (id?: string) => Alliance | undefined;
 }
 
-const STORAGE_KEY = 'k1391_kingdom_data_cache_v2';
+const STORAGE_KEY = 'k1391_kingdom_data_cache_v3';
 
 const KingdomContext = createContext<KingdomContextType>({
   data: emptyKingdomData,
@@ -24,7 +25,10 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const cached = localStorage.getItem(STORAGE_KEY);
       if (cached) {
-        return JSON.parse(cached);
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.alliances) && parsed.alliances.length > 0) {
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn('Failed to parse cached kingdom data', e);
@@ -36,15 +40,11 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    const endpoint = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;
-    if (!endpoint) {
-      setError('VITE_GOOGLE_APPS_SCRIPT_URL is not configured.');
-      setLoading(false);
-      return;
-    }
+    const endpoint = GOOGLE_APPS_SCRIPT_URL;
 
     try {
       const url = `${endpoint}${endpoint.includes('?') ? '&' : '?'}t=${Date.now()}`;
+      console.log('[Kingdom] Fetching live data from:', url);
       const res = await fetch(url, { method: 'GET' });
       const json = await res.json();
 
@@ -62,18 +62,31 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
           faq: Array.isArray(live.faq) ? live.faq : []
         };
 
+        console.log('[Kingdom] Live data received successfully:', {
+          alliances: liveData.alliances.length,
+          team: liveData.team.length,
+          kvkRecords: liveData.kvkRecords.length,
+          news: liveData.news.length,
+          faq: liveData.faq.length
+        });
+
         setData(liveData);
         setError(null);
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(liveData));
-        } catch (e) {
-          console.warn('Unable to cache to localStorage', e);
+
+        if (liveData.alliances.length > 0) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(liveData));
+          } catch (e) {
+            console.warn('Unable to cache to localStorage', e);
+          }
         }
       } else {
-        setError(json?.error || 'Failed to parse Google Sheets response.');
+        const errMsg = json?.error || 'Invalid response from Google Sheets';
+        console.error('[Kingdom] Error from script:', errMsg);
+        setError(errMsg);
       }
     } catch (err) {
-      console.warn('Could not fetch latest Google Sheet data:', err);
+      console.error('[Kingdom] Failed to fetch Google Sheet data:', err);
       setError('Could not reach Google Sheets. Please check your network or script deployment.');
     } finally {
       setLoading(false);

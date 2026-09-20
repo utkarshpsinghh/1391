@@ -4,6 +4,7 @@ import { Send } from 'lucide-react';
 import { PageHero } from '../components/PageHero';
 import { Button } from '../components/Button';
 import { useKingdom } from '../context/KingdomContext';
+import { GOOGLE_APPS_SCRIPT_URL } from '../config';
 
 export const Apply: React.FC = () => {
   const [params] = useSearchParams();
@@ -70,7 +71,7 @@ export const Apply: React.FC = () => {
       return;
     }
 
-    const endpoint = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;
+    const endpoint = GOOGLE_APPS_SCRIPT_URL;
     if (!endpoint) {
       setErr('The kingdom ledger is not connected yet.');
       return;
