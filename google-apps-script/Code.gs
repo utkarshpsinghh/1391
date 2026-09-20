@@ -1,9 +1,7 @@
 /**
  * Kingdom 1391 Content Management & Enquiry Receiver
  * 
- * Configured for TWO SEPARATE GOOGLE SHEETS:
- * 1. Details Sheet: Alliances, Alliance Leaders, Team, KVK Records, News, FAQ, Settings
- * 2. Enquiries Sheet: Player Transfer Applications
+ * Optimized for high-speed delivery with single-batch sheet reads.
  */
 
 // Paste the Spreadsheet ID of your DETAILS sheet:
@@ -56,19 +54,24 @@ function getEnquiriesWorkbook_() {
 }
 
 /**
- * Handle GET requests to return all Kingdom CMS data as JSON or JSONP
+ * Fast GET handler: Reads all sheets in a single batch for maximum speed
  */
 function doGet(e) {
   try {
     const wb = getDetailsWorkbook_();
-    initDetailsSheetsIfMissing_(wb);
+    const sheets = wb.getSheets();
+    const sheetMap = {};
+    for (var i = 0; i < sheets.length; i++) {
+      sheetMap[sheets[i].getName()] = sheets[i];
+    }
 
-    const settings = getSettingsData_(wb);
-    const alliances = getAlliancesData_(wb);
-    const team = getTeamData_(wb);
-    const kvkRecords = getKvkData_(wb);
-    const news = getNewsData_(wb);
-    const faq = getFaqData_(wb);
+    const settings = getSettingsDataFromSheet_(sheetMap['Settings']);
+    const leadersMap = getAllianceLeadersMapFromSheet_(sheetMap['Alliance_Leaders']);
+    const alliances = getAlliancesDataFromSheet_(sheetMap['Alliances'], leadersMap);
+    const team = getTeamDataFromSheet_(sheetMap['Team']);
+    const kvkRecords = getKvkDataFromSheet_(sheetMap['KVK_Records']);
+    const news = getNewsDataFromSheet_(sheetMap['News']);
+    const faq = getFaqDataFromSheet_(sheetMap['FAQ']);
 
     const payload = {
       ok: true,
@@ -83,7 +86,7 @@ function doGet(e) {
       }
     };
 
-    // JSONP callback support to bypass any browser CORS / proxy blocks
+    // Support JSONP if requested by client
     const callback = e && e.parameter && e.parameter.callback;
     if (callback) {
       return ContentService
@@ -213,8 +216,7 @@ function formatTimeValue_(val) {
 /**
  * Reads Alliance Leaders from the dedicated 'Alliance_Leaders' sheet
  */
-function getAllianceLeadersMap_(wb) {
-  const sheet = wb.getSheetByName('Alliance_Leaders');
+function getAllianceLeadersMapFromSheet_(sheet) {
   const map = {};
   if (!sheet) return map;
 
@@ -245,13 +247,11 @@ function getAllianceLeadersMap_(wb) {
 /**
  * Reads Alliances sheet and merges contacts from Alliance_Leaders
  */
-function getAlliancesData_(wb) {
-  const sheet = wb.getSheetByName('Alliances');
+function getAlliancesDataFromSheet_(sheet, leadersMap) {
   if (!sheet) return [];
   const rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return [];
 
-  const leadersMap = getAllianceLeadersMap_(wb);
   const list = [];
 
   for (var i = 1; i < rows.length; i++) {
@@ -268,7 +268,7 @@ function getAlliancesData_(wb) {
         .filter(Boolean);
     };
 
-    let contacts = leadersMap[id] || [];
+    let contacts = (leadersMap && leadersMap[id]) || [];
     if (contacts.length === 0) {
       const contactNames = String(r[9] || '').split(/[,/]/).map(function(s){ return s.trim(); });
       const contactIds = String(r[10] || '').split(/[,/]/).map(function(s){ return s.trim(); });
@@ -305,8 +305,7 @@ function getAlliancesData_(wb) {
 /**
  * Reads Team sheet
  */
-function getTeamData_(wb) {
-  const sheet = wb.getSheetByName('Team');
+function getTeamDataFromSheet_(sheet) {
   if (!sheet) return [];
   const rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return [];
@@ -334,8 +333,7 @@ function getTeamData_(wb) {
 /**
  * Reads KVK Records sheet
  */
-function getKvkData_(wb) {
-  const sheet = wb.getSheetByName('KVK_Records');
+function getKvkDataFromSheet_(sheet) {
   if (!sheet) return [];
   const rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return [];
@@ -359,8 +357,7 @@ function getKvkData_(wb) {
 /**
  * Reads News sheet
  */
-function getNewsData_(wb) {
-  const sheet = wb.getSheetByName('News');
+function getNewsDataFromSheet_(sheet) {
   if (!sheet) return [];
   const rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return [];
@@ -385,8 +382,7 @@ function getNewsData_(wb) {
 /**
  * Reads FAQ sheet
  */
-function getFaqData_(wb) {
-  const sheet = wb.getSheetByName('FAQ');
+function getFaqDataFromSheet_(sheet) {
   if (!sheet) return [];
   const rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return [];
@@ -408,7 +404,7 @@ function getFaqData_(wb) {
 /**
  * Reads Settings sheet
  */
-function getSettingsData_(wb) {
+function getSettingsDataFromSheet_(sheet) {
   const defaultSet = {
     kingdomNumber: '1391',
     kingdomName: 'KINGSHOT KINGDOM 1391',
@@ -418,7 +414,6 @@ function getSettingsData_(wb) {
     heroCopy: 'A friendly kingdom for active players,\nstrong alliances and unforgettable battles.'
   };
 
-  const sheet = wb.getSheetByName('Settings');
   if (!sheet) return defaultSet;
   const rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return defaultSet;
