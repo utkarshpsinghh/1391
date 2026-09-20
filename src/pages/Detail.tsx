@@ -22,7 +22,7 @@ export const Detail: React.FC = () => {
         className="alliance-hero"
         style={{ '--banner': a.color } as React.CSSProperties}
       >
-        <AllianceBadge a={a} />
+        <AllianceBadge a={a} size="lg" />
 
         <div>
           <span>THE ALLIANCE OF K{data.settings.kingdomNumber}</span>

@@ -70,7 +70,7 @@ export const Schedule: React.FC = () => {
               {alliances.length > 0 ? (
                 alliances.map(a => (
                   <Link to={`/alliances/${a.id}`} key={a.id}>
-                    <AllianceBadge a={a} />
+                    <AllianceBadge a={a} size="sm" showTag={false} />
                     <b>{a.id}</b>
                     <em>
                       {a.events && a.events[key] && a.events[key].length > 0
