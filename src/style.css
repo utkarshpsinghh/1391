@@ -87,3 +87,148 @@ svg {
   .team-id-rank{top:5px;right:6px;font-size:7px;padding:2px 5px}
   .team-footer-note{gap:7px}
 }
+
+/* Royal Loading Screen */
+.kingdom-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #55331a 0%, #2e180c 100%);
+  color: #fff0bd;
+  padding: 20px;
+  text-align: center;
+}
+
+.loading-emblem {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.loading-crest {
+  font-size: 58px;
+  color: #f3b63d;
+  filter: drop-shadow(0 0 16px rgba(243, 182, 61, 0.6));
+  animation: pulse-crest 2s ease-in-out infinite;
+}
+
+.loading-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px dashed #f3b63d;
+  animation: spin-ring 10s linear infinite;
+  box-shadow: 0 0 20px rgba(243, 182, 61, 0.3);
+}
+
+.loading-sparks {
+  position: absolute;
+  bottom: -15px;
+  font-size: 16px;
+  color: #ffe494;
+  letter-spacing: 6px;
+  animation: glow-sparks 1.5s ease-in-out infinite alternate;
+}
+
+.loading-parchment {
+  background: linear-gradient(120deg, #fff0c7, #efd49a 50%, #ffebbb);
+  border: 3px solid #74401f;
+  border-radius: 12px;
+  padding: 24px 36px;
+  color: #3d2516;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 0 25px rgba(180, 122, 45, 0.25);
+  max-width: 440px;
+  width: 90%;
+}
+
+.loading-parchment h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  color: #5a2c13;
+}
+
+.loading-parchment p {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #5c3c1e;
+}
+
+.loading-bar {
+  width: 100%;
+  height: 10px;
+  background: #deb774;
+  border: 2px solid #74401f;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-progress {
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, #bd4c2d, #f3b63d);
+  border-radius: 10px;
+  animation: progress-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-crest {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(243, 182, 61, 0.5));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 24px rgba(243, 182, 61, 0.9));
+  }
+}
+
+@keyframes spin-ring {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes glow-sparks {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(50%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+/* Dynamic status classes */
+.open {
+  color: #376b2d;
+  font-weight: 800;
+}
+.closed {
+  color: #ab3723;
+  font-weight: 800;
+}
+.invite {
+  color: #9c6819;
+  font-weight: 800;
+}
+
