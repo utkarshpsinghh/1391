@@ -62,6 +62,17 @@ export interface KingdomSettings {
   heroCopy: string;
 }
 
+export interface LeaderboardEntry {
+  category: string;
+  rank: number;
+  playerName: string;
+  alliance: string;
+  scoreValue: string;
+  scoreLabel?: string;
+  avatarUrl?: string;
+  updatedAt?: string;
+}
+
 export interface KingdomData {
   settings: KingdomSettings;
   alliances: Alliance[];
@@ -69,4 +80,7 @@ export interface KingdomData {
   kvkRecords: KvkRecord[];
   news: NewsItem[];
   faq: FaqItem[];
+  leaderboard?: LeaderboardEntry[];
+  lastSyncedAt?: string;
 }
+

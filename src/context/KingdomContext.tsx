@@ -150,13 +150,18 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
         team: Array.isArray(live.team) ? live.team : [],
         kvkRecords: Array.isArray(live.kvkRecords) ? live.kvkRecords : [],
         news: Array.isArray(live.news) ? live.news : [],
-        faq: Array.isArray(live.faq) ? live.faq : []
+        faq: Array.isArray(live.faq) ? live.faq : [],
+        leaderboard: Array.isArray(live.leaderboard) && live.leaderboard.length > 0
+          ? live.leaderboard
+          : (data.leaderboard || emptyKingdomData.leaderboard),
+        lastSyncedAt: live.lastSyncedAt || jsonResult.updatedAt || new Date().toISOString()
       };
 
       console.log('[Kingdom] Live data loaded:', {
         alliances: liveData.alliances.length,
         team: liveData.team.length,
-        records: liveData.kvkRecords.length
+        records: liveData.kvkRecords.length,
+        leaderboard: liveData.leaderboard?.length
       });
 
       setData(liveData);

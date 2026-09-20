@@ -323,4 +323,433 @@ svg {
   border-top: 4px solid #e7bd68;
 }
 
+/* ==========================================================================
+   LEADERBOARD STYLES (In-Game Aesthetic)
+   ========================================================================== */
+.leaderboard-section {
+  padding-top: 40px;
+  padding-bottom: 90px;
+}
+
+/* Sync status & Refresh button */
+.sync-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(120, 70, 30, 0.15), rgba(70, 40, 15, 0.25));
+  border: 2px solid rgba(170, 120, 60, 0.4);
+  border-radius: 12px;
+}
+
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #5c3517;
+}
+
+.sync-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #39962e;
+  box-shadow: 0 0 8px #4dd83d;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+
+.sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #4b260f;
+  background: linear-gradient(#ffe688, #e5a528);
+  border: 2px solid #fff0a8;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px #b66d17, 0 3px 0 #7a4214;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.sync-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.sync-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Category Switcher */
+.category-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding: 20px;
+  background: linear-gradient(130deg, #f7e6c0, #ecd29b);
+  border: 3px solid #8c5225;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 2px #fdeec9, 0 6px 0 #6e3e18;
+}
+
+.category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #7b4a22;
+  text-transform: uppercase;
+}
+
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #5d3618;
+  background: #fdf5e2;
+  border: 2px solid #be8b4f;
+  border-radius: 20px;
+  box-shadow: 0 2px 0 #95622e;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.category-pill:hover {
+  background: #fff9ed;
+  transform: translateY(-1px);
+  border-color: #8b5128;
+}
+
+.category-pill.active {
+  color: #fff6cb;
+  background: linear-gradient(135deg, #88451f, #5f2b12);
+  border-color: #ffd276;
+  box-shadow: inset 0 0 0 1px #d69438, 0 3px 0 #411d0b;
+  transform: translateY(-2px);
+}
+
+/* In-Game Leaderboard Table Card */
+.in-game-leaderboard-card {
+  background: #ecdcb3;
+  border: 4px solid #713d19;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 2px #f8e9c9, 0 8px 0 #582f14, 0 14px 20px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.leaderboard-table-header {
+  display: grid;
+  grid-template-columns: 80px 1fr 170px;
+  align-items: center;
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #996735, #75441d);
+  border-bottom: 3px solid #542d11;
+  color: #fff3c9;
+  font-family: Rye, serif;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-shadow: 1px 2px 2px #361a07;
+}
+
+.col-rank {
+  text-align: center;
+}
+
+.col-power {
+  text-align: right;
+  padding-right: 8px;
+}
+
+/* Rows list */
+.leaderboard-rows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 170px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.leaderboard-row:hover {
+  transform: translateX(4px);
+}
+
+/* Rank 1: Gold */
+.row-rank-1 {
+  background: linear-gradient(90deg, #feeaa0 0%, #f7ca54 60%, #ecc045 100%);
+  border: 2px solid #dfa52b;
+  box-shadow: inset 0 0 0 1px #fff5c5, 0 4px 6px rgba(189, 137, 28, 0.35);
+}
+
+/* Rank 2: Silver/Ice Blue */
+.row-rank-2 {
+  background: linear-gradient(90deg, #d3edfe 0%, #a2d2fb 60%, #8ec6f7 100%);
+  border: 2px solid #6cb1f0;
+  box-shadow: inset 0 0 0 1px #eaf6ff, 0 4px 6px rgba(90, 150, 210, 0.35);
+}
+
+/* Rank 3: Bronze/Copper */
+.row-rank-3 {
+  background: linear-gradient(90deg, #f7d1bd 0%, #e8a586 60%, #dd9674 100%);
+  border: 2px solid #c97651;
+  box-shadow: inset 0 0 0 1px #fbe5d8, 0 4px 6px rgba(175, 95, 60, 0.35);
+}
+
+/* Rank 4-10: Parchment */
+.row-rank-default {
+  background: #faf2dc;
+  border: 2px solid #dac297;
+  box-shadow: 0 2px 4px rgba(80, 50, 20, 0.1);
+}
+
+/* Rank Badges */
+.rank-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rank-badge {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: Rye, serif;
+  font-size: 20px;
+  border-radius: 9px;
+  position: relative;
+  line-height: 1;
+}
+
+.rank-badge-1 {
+  background: linear-gradient(135deg, #f7bb19, #e09307);
+  color: #fff9d7;
+  border: 2px solid #fff1a0;
+  box-shadow: 0 3px 0 #925804, 0 4px 7px rgba(0,0,0,0.25);
+  text-shadow: 1px 1px 2px #4e2900;
+}
+
+.crown-mini {
+  color: #fff7b9;
+  margin-bottom: 1px;
+}
+
+.rank-badge-2 {
+  background: linear-gradient(135deg, #81bbf5, #448fdc);
+  color: #f2f8ff;
+  border: 2px solid #d4e8fc;
+  box-shadow: 0 3px 0 #205c9c, 0 4px 7px rgba(0,0,0,0.22);
+  text-shadow: 1px 1px 2px #143659;
+}
+
+.rank-badge-3 {
+  background: linear-gradient(135deg, #e48d68, #bc5930);
+  color: #fff1eb;
+  border: 2px solid #f6cfbd;
+  box-shadow: 0 3px 0 #7b3113, 0 4px 7px rgba(0,0,0,0.22);
+  text-shadow: 1px 1px 2px #441706;
+}
+
+.rank-badge-default {
+  background: linear-gradient(135deg, #ecd9b7, #d5b98f);
+  color: #553118;
+  border: 2px solid #f9edd4;
+  box-shadow: 0 2px 0 #9f7a4e;
+  font-size: 18px;
+}
+
+/* Governor info */
+.gov-col {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.gov-avatar-box {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  position: relative;
+  border-radius: 10px;
+  background: #392213;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #d8a658;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+.gov-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gov-avatar-placeholder {
+  font-family: Rye, serif;
+  font-size: 22px;
+  color: #fde891;
+}
+
+.gov-name-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gov-tag {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: var(--tag-color, #78401b);
+  background: rgba(255, 255, 255, 0.45);
+  padding: 2px 6px;
+  border-radius: 5px;
+  border: 1px solid rgba(130, 80, 40, 0.25);
+}
+
+.gov-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #3b2011;
+  word-break: break-word;
+}
+
+.row-rank-1 .gov-name {
+  font-size: 19px;
+  color: #432104;
+}
+
+/* Power / Score */
+.power-col {
+  text-align: right;
+  padding-right: 8px;
+}
+
+.power-value {
+  font-family: 'Baloo 2', Rye, sans-serif;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.row-rank-1 .power-value {
+  color: #643809;
+}
+
+.row-rank-2 .power-value {
+  color: #214f7b;
+}
+
+.row-rank-3 .power-value {
+  color: #6c2e13;
+}
+
+.row-rank-default .power-value {
+  color: #573017;
+}
+
+.empty-leaderboard {
+  text-align: center;
+  padding: 45px 20px;
+  color: #7b4a22;
+}
+
+.empty-leaderboard p {
+  font-size: 19px;
+  font-weight: 800;
+  margin: 12px 0 6px;
+}
+
+.empty-leaderboard small {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.leaderboard-footer-note {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #693e1b;
+}
+
+@media (max-width: 600px) {
+  .leaderboard-table-header,
+  .leaderboard-row {
+    grid-template-columns: 50px 1fr 115px;
+    padding: 8px 10px;
+  }
+  .rank-badge {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  .gov-avatar-box {
+    width: 40px;
+    height: 40px;
+  }
+  .gov-name {
+    font-size: 15px;
+  }
+  .power-value {
+    font-size: 17px;
+  }
+}
+
+
 

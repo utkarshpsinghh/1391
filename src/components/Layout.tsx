@@ -12,7 +12,8 @@ import {
   Shield,
   Trophy,
   Bell,
-  MessageCircle
+  MessageCircle,
+  Crown
 } from 'lucide-react';
 import { Footer } from './Footer';
 import { useKingdom } from '../context/KingdomContext';
@@ -20,6 +21,7 @@ import { useKingdom } from '../context/KingdomContext';
 const navItems = [
   ['/', 'Home', Castle],
   ['/alliances', 'Alliances', Shield],
+  ['/leaderboard', 'Leaderboard', Crown],
   ['/transfer', 'Transfer', ScrollText],
   ['/schedule', 'Schedule', Clock3],
   ['/records', 'KVK Records', Trophy],

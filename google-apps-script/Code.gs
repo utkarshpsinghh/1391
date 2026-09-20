@@ -72,6 +72,8 @@ function doGet(e) {
     const kvkRecords = getKvkDataFromSheet_(sheetMap['KVK_Records']);
     const news = getNewsDataFromSheet_(sheetMap['News']);
     const faq = getFaqDataFromSheet_(sheetMap['FAQ']);
+    const leaderboard = getLeaderboardDataFromSheet_(sheetMap['Leaderboard']);
+    const lastSyncedAt = getLeaderboardLastSyncedAt_(sheetMap['Leaderboard']);
 
     const payload = {
       ok: true,
@@ -82,7 +84,9 @@ function doGet(e) {
         team: team,
         kvkRecords: kvkRecords,
         news: news,
-        faq: faq
+        faq: faq,
+        leaderboard: leaderboard,
+        lastSyncedAt: lastSyncedAt
       }
     };
 
@@ -402,6 +406,53 @@ function getFaqDataFromSheet_(sheet) {
 }
 
 /**
+ * Reads Leaderboard sheet
+ */
+function getLeaderboardDataFromSheet_(sheet) {
+  if (!sheet) return [];
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length < 2) return [];
+
+  const list = [];
+  for (var i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const cat = String(r[0] || '').trim();
+    if (!cat) continue;
+
+    list.push({
+      category: cat,
+      rank: Number(r[1]) || 1,
+      playerName: String(r[2] || '').trim(),
+      alliance: String(r[3] || '').trim().toUpperCase(),
+      scoreValue: String(r[4] || '').trim(),
+      scoreLabel: String(r[5] || 'Power').trim(),
+      avatarUrl: String(r[6] || '').trim(),
+      updatedAt: r[7] ? String(r[7]) : ''
+    });
+  }
+  return list;
+}
+
+/**
+ * Returns latest sync timestamp from Leaderboard sheet
+ */
+function getLeaderboardLastSyncedAt_(sheet) {
+  if (!sheet) return new Date().toISOString();
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length < 2) return new Date().toISOString();
+
+  // Check last column (col 8) for custom date, else fallback
+  for (var i = rows.length - 1; i >= 1; i--) {
+    if (rows[i][7]) {
+      const d = new Date(rows[i][7]);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    }
+  }
+  return new Date().toISOString();
+}
+
+
+/**
  * Reads Settings sheet
  */
 function getSettingsDataFromSheet_(sheet) {
@@ -612,6 +663,52 @@ function initDetailsSheetsIfMissing_(wb) {
     fSheet.appendRow(['How long does it take to receive a response?', 'Response times vary. A leader will share the next steps when they can.']);
     fSheet.setFrozenRows(1);
     fSheet.getRange(1, 1, 1, 2).setFontWeight('bold');
+  }
+
+  // 8. Leaderboard Sheet
+  let lSheet = wb.getSheetByName('Leaderboard');
+  if (!lSheet) {
+    lSheet = wb.insertSheet('Leaderboard');
+    lSheet.appendRow(['Category', 'Rank', 'Player Name', 'Alliance', 'Score / Power', 'Score Label', 'Avatar URL', 'Updated At']);
+    
+    // Alliance Rankings
+    lSheet.appendRow(['Alliance Power', 1, 'OneForAll', 'HOT', '18,450,000,000', 'Alliance Power', '', new Date()]);
+    lSheet.appendRow(['Alliance Power', 2, 'NastyAzzTroops', 'NAT', '16,920,000,000', 'Alliance Power', '', new Date()]);
+    lSheet.appendRow(['Alliance Power', 3, 'VikingsValhalla', 'VIK', '14,210,000,000', 'Alliance Power', '', new Date()]);
+    lSheet.appendRow(['Alliance Power', 4, 'MadChaos', 'MAD', '12,800,000,000', 'Alliance Power', '', new Date()]);
+    lSheet.appendRow(['Alliance Power', 5, 'SquadDownBad', 'SDB', '10,500,000,000', 'Alliance Power', '', new Date()]);
+
+    lSheet.appendRow(['Alliance Kills', 1, 'NastyAzzTroops', 'NAT', '4,820,000,000', 'Alliance Kills', '', new Date()]);
+    lSheet.appendRow(['Alliance Kills', 2, 'OneForAll', 'HOT', '4,150,000,000', 'Alliance Kills', '', new Date()]);
+    lSheet.appendRow(['Alliance Kills', 3, 'VikingsValhalla', 'VIK', '3,600,000,000', 'Alliance Kills', '', new Date()]);
+    lSheet.appendRow(['Alliance Kills', 4, 'MadChaos', 'MAD', '2,950,000,000', 'Alliance Kills', '', new Date()]);
+    lSheet.appendRow(['Alliance Kills', 5, 'SquadDownBad', 'SDB', '2,400,000,000', 'Alliance Kills', '', new Date()]);
+
+    // Top 10 Personal Power (From in-game screenshot)
+    lSheet.appendRow(['Personal Power', 1, 'PIGTATORDADDy', 'NAT', '671,030,304', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 2, 'EhMoose', 'NAT', '642,252,053', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 3, 'KLITlicker', 'VIK', '509,439,874', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 4, 'SuperBumbleBeep', 'HOT', '488,208,722', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 5, 'Moha HOT', 'HOT', '453,022,202', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 6, 'P@nd@', 'HOT', '433,211,587', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 7, 'OL DAWG', 'VIK', '428,787,600', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 8, 'King_Slayer', 'NAT', '412,550,120', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 9, 'Valkyrie', 'MAD', '405,190,400', 'Power', '', new Date()]);
+    lSheet.appendRow(['Personal Power', 10, 'Maddawg', 'SDB', '398,420,950', 'Power', '', new Date()]);
+
+    // Private categories from screenshots
+    lSheet.appendRow(['Town Center Level', 1, 'East_666', 'NAT', 'TG 30 (FC 5)', 'TG Level', '', new Date()]);
+    lSheet.appendRow(['Kill Count', 1, 'PIGTATORDADDy', 'NAT', '1,420,550,230', 'Kills', '', new Date()]);
+    lSheet.appendRow(['Rebel Conquest Stage', 1, 'PIGTATORDADDy', 'NAT', 'Stage 420', 'Stage', '', new Date()]);
+    lSheet.appendRow(['Hero Power', 1, 'PIGTATORDADDy', 'NAT', '85,420,000', 'Hero Power', '', new Date()]);
+    lSheet.appendRow(['Hero\'s Total Power', 1, 'PIGTATORDADDy', 'NAT', '195,800,000', 'Total Hero Power', '', new Date()]);
+    lSheet.appendRow(['Total Pet Power', 1, 'SuperBumbleBeep', 'HOT', '68,230,000', 'Pet Power', '', new Date()]);
+    lSheet.appendRow(['Island Prosperity', 1, 'EhMoose', 'NAT', '14,850', 'Prosperity', '', new Date()]);
+    lSheet.appendRow(['Mystic Trial', 1, 'EhMoose', 'NAT', 'Floor 850', 'Floor', '', new Date()]);
+    lSheet.appendRow(['Master Total Power', 1, 'SuperBumbleBeep', 'HOT', '312,400,000', 'Master Power', '', new Date()]);
+
+    lSheet.setFrozenRows(1);
+    lSheet.getRange(1, 1, 1, 8).setFontWeight('bold');
   }
 }
 
