@@ -4,7 +4,7 @@ import { AllianceCard } from '../components/AllianceCard';
 import { useKingdom } from '../context/KingdomContext';
 
 export const Alliances: React.FC = () => {
-  const { data } = useKingdom();
+  const { data, error, refresh } = useKingdom();
   const { alliances, settings } = data;
   const [filter, setFilter] = useState('ALL');
 
@@ -38,6 +38,13 @@ export const Alliances: React.FC = () => {
             showing.map(a => (
               <AllianceCard key={a.id} a={a} />
             ))
+          ) : error ? (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', margin: '20px auto', padding: '24px', background: '#f8dfaa', border: '2px solid #926136', borderRadius: '10px', maxWidth: '500px' }}>
+              <p style={{ fontWeight: 'bold', color: '#8b2e1d', margin: '0 0 12px' }}>⚠️ {error}</p>
+              <button className="button gold" onClick={() => refresh()}>
+                RETRY CONNECTION
+              </button>
+            </div>
           ) : (
             <p className="time-note">No alliances found in the kingdom ledger.</p>
           )}

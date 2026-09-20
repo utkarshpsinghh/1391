@@ -4,18 +4,6 @@
  * Configured for TWO SEPARATE GOOGLE SHEETS:
  * 1. Details Sheet: Alliances, Alliance Leaders, Team, KVK Records, News, FAQ, Settings
  * 2. Enquiries Sheet: Player Transfer Applications
- *
- * Setup:
- * 1. Create two Google Sheets:
- *    - Sheet 1: "Kingdom 1391 - Details"
- *    - Sheet 2: "Kingdom 1391 - Enquiries"
- * 2. Copy their Spreadsheet IDs from their URLs and paste below in:
- *    - DETAILS_SPREADSHEET_ID
- *    - ENQUIRIES_SPREADSHEET_ID
- * 3. In Extensions > Apps Script, paste this file and save.
- * 4. Run "setupKingdomSheets" once to auto-create and populate tabs in both sheets.
- * 5. Deploy > New deployment > Web app (Execute as: Me, Who has access: Anyone).
- * 6. Copy the Web app URL into VITE_GOOGLE_APPS_SCRIPT_URL in .env.local / Vercel.
  */
 
 // Paste the Spreadsheet ID of your DETAILS sheet:
@@ -68,7 +56,7 @@ function getEnquiriesWorkbook_() {
 }
 
 /**
- * Handle GET requests to return all Kingdom CMS data as JSON from DETAILS sheet
+ * Handle GET requests to return all Kingdom CMS data as JSON or JSONP
  */
 function doGet(e) {
   try {
@@ -95,9 +83,24 @@ function doGet(e) {
       }
     };
 
+    // JSONP callback support to bypass any browser CORS / proxy blocks
+    const callback = e && e.parameter && e.parameter.callback;
+    if (callback) {
+      return ContentService
+        .createTextOutput(callback + '(' + JSON.stringify(payload) + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
     return json_(payload);
   } catch (err) {
-    return json_({ ok: false, error: String(err) });
+    const errPayload = { ok: false, error: String(err) };
+    const callback = e && e.parameter && e.parameter.callback;
+    if (callback) {
+      return ContentService
+        .createTextOutput(callback + '(' + JSON.stringify(errPayload) + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return json_(errPayload);
   }
 }
 
@@ -169,7 +172,6 @@ function hasRecentDuplicate_(sheet, payload) {
   if (lastRow < 2) return false;
 
   const firstDataRow = Math.max(2, lastRow - 499);
-  // Column 1: Date, Col 2: Name (idx 1), Col 3: ID (idx 2), ..., Col 14: Discord (idx 13)
   const rows = sheet.getRange(firstDataRow, 1, lastRow - firstDataRow + 1, 15).getValues();
   const cutoff = Date.now() - DUPLICATE_WINDOW_HOURS * 60 * 60 * 1000;
 
@@ -179,7 +181,7 @@ function hasRecentDuplicate_(sheet, payload) {
 
     const rowPlayerId = normalize_(row[2]);
     const rowPlayerName = normalize_(row[1]);
-    const rowDiscord = normalize_(row[13]); // Column 14 is index 13
+    const rowDiscord = normalize_(row[13]);
 
     if (normPlayerId && rowPlayerId && normPlayerId === rowPlayerId) {
       return true;
@@ -193,6 +195,19 @@ function hasRecentDuplicate_(sheet, payload) {
 
 function normalize_(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '');
+}
+
+/**
+ * Formats time values safely in case Google Sheets auto-parses them as Date objects
+ */
+function formatTimeValue_(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    var h = val.getHours();
+    var m = val.getMinutes();
+    return (h < 10 ? '0' + h : '' + h) + ':' + (m < 10 ? '0' + m : '' + m);
+  }
+  return String(val);
 }
 
 /**
@@ -244,7 +259,8 @@ function getAlliancesData_(wb) {
     const id = String(r[0] || '').trim().toUpperCase();
     if (!id) continue;
 
-    const parseTimes = function (val) {
+    const parseTimes = function (raw) {
+      const val = formatTimeValue_(raw);
       if (!val) return [];
       return String(val)
         .split(/[,/]/)
