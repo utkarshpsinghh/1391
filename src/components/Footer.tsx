@@ -6,7 +6,6 @@ import { useKingdom } from '../context/KingdomContext';
 const quickNav = [
   ['/', 'Home'],
   ['/alliances', 'Alliances'],
-  ['/leaderboard', 'Leaderboard'],
   ['/transfer', 'Transfer'],
   ['/schedule', 'Schedule'],
   ['/records', 'KVK Records']

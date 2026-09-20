@@ -21,7 +21,6 @@ import { useKingdom } from '../context/KingdomContext';
 const navItems = [
   ['/', 'Home', Castle],
   ['/alliances', 'Alliances', Shield],
-  ['/leaderboard', 'Leaderboard', Crown],
   ['/transfer', 'Transfer', ScrollText],
   ['/schedule', 'Schedule', Clock3],
   ['/records', 'KVK Records', Trophy],
