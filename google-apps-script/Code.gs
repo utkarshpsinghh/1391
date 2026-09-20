@@ -59,11 +59,22 @@ function getEnquiriesWorkbook_() {
 function doGet(e) {
   try {
     const wb = getDetailsWorkbook_();
-    const sheets = wb.getSheets();
-    const sheetMap = {};
+    let sheets = wb.getSheets();
+    let sheetMap = {};
     for (var i = 0; i < sheets.length; i++) {
       sheetMap[sheets[i].getName()] = sheets[i];
     }
+
+    // Auto-create Leaderboard sheet if not created yet
+    if (!sheetMap['Leaderboard']) {
+      initDetailsSheetsIfMissing_(wb);
+      sheets = wb.getSheets();
+      sheetMap = {};
+      for (var j = 0; j < sheets.length; j++) {
+        sheetMap[sheets[j].getName()] = sheets[j];
+      }
+    }
+
 
     const settings = getSettingsDataFromSheet_(sheetMap['Settings']);
     const leadersMap = getAllianceLeadersMapFromSheet_(sheetMap['Alliance_Leaders']);
