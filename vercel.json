@@ -1,15 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/crm",
-      "destination": "/crm/index.html"
-    },
-    {
-      "source": "/crm/:match*",
-      "destination": "/crm/index.html"
-    },
-    {
-      "source": "/((?!crm).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
