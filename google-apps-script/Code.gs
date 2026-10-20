@@ -372,7 +372,16 @@ function verifyGoogleRecaptcha_(token) {
       muteHttpExceptions: true
     });
     const result = JSON.parse(response.getContentText() || '{}');
-    return Boolean(result && result.success);
+    if (!result.success) {
+      Logger.log('reCAPTCHA failed: ' + JSON.stringify(result));
+      return false;
+    }
+    // For v3, score is between 0.0 (bot) and 1.0 (human). 0.3+ is verified human.
+    if (result.score !== undefined && result.score < 0.3) {
+      Logger.log('reCAPTCHA bot score detected: ' + result.score);
+      return false;
+    }
+    return true;
   } catch (err) {
     Logger.log('Google reCAPTCHA verification error: ' + err);
     return false;

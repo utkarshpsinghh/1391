@@ -19,10 +19,6 @@ export const Apply: React.FC = () => {
   const { data } = useKingdom();
   const { alliances } = data;
 
-  const recaptchaContainerRef = useRef<HTMLDivElement | null>(null);
-  const recaptchaWidgetId = useRef<number | null>(null);
-  const [captchaToken, setCaptchaToken] = useState<string>('');
-
   const [form, setForm] = useState({
     playerName: '',
     playerId: '',
@@ -47,48 +43,20 @@ export const Apply: React.FC = () => {
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
 
-  // Initialize Google reCAPTCHA v2 checkbox
+  // Initialize invisible Google reCAPTCHA v3
   useEffect(() => {
     if (!RECAPTCHA_SITE_KEY) return;
 
-    const renderWidget = () => {
-      if (
-        window.grecaptcha &&
-        window.grecaptcha.render &&
-        recaptchaContainerRef.current &&
-        recaptchaWidgetId.current === null
-      ) {
-        try {
-          recaptchaWidgetId.current = window.grecaptcha.render(recaptchaContainerRef.current, {
-            sitekey: RECAPTCHA_SITE_KEY,
-            callback: (token: string) => {
-              setCaptchaToken(token);
-            },
-            'expired-callback': () => {
-              setCaptchaToken('');
-            }
-          });
-        } catch (e) {
-          console.warn('reCAPTCHA already rendered or error:', e);
-        }
-      }
-    };
-
-    const SCRIPT_ID = 'google-recaptcha-script';
+    const SCRIPT_ID = 'google-recaptcha-v3-script';
     let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement;
 
     if (!script) {
       script = document.createElement('script');
       script.id = SCRIPT_ID;
-      script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoaded&render=explicit';
+      script.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(RECAPTCHA_SITE_KEY)}`;
       script.async = true;
       script.defer = true;
-      window.onRecaptchaLoaded = () => {
-        renderWidget();
-      };
       document.body.appendChild(script);
-    } else if (window.grecaptcha && window.grecaptcha.render) {
-      renderWidget();
     }
   }, []);
 
@@ -127,18 +95,24 @@ export const Apply: React.FC = () => {
       return;
     }
 
-    let finalRecaptchaToken = captchaToken;
-    if (RECAPTCHA_SITE_KEY) {
-      if (
-        !finalRecaptchaToken &&
-        window.grecaptcha &&
-        recaptchaWidgetId.current !== null
-      ) {
-        finalRecaptchaToken = window.grecaptcha.getResponse(recaptchaWidgetId.current);
-      }
-      if (!finalRecaptchaToken) {
-        setErr('Please check the "I\'m not a robot" reCAPTCHA box to verify your application.');
-        return;
+    let finalRecaptchaToken = '';
+    if (RECAPTCHA_SITE_KEY && window.grecaptcha) {
+      try {
+        finalRecaptchaToken = await new Promise<string>((resolve) => {
+          window.grecaptcha.ready(async () => {
+            try {
+              const token = await window.grecaptcha.execute(RECAPTCHA_SITE_KEY, {
+                action: 'submit_enquiry'
+              });
+              resolve(token || '');
+            } catch (execErr) {
+              console.warn('reCAPTCHA execution error:', execErr);
+              resolve('');
+            }
+          });
+        });
+      } catch (err) {
+        console.warn('reCAPTCHA error:', err);
       }
     }
 
@@ -433,20 +407,6 @@ export const Apply: React.FC = () => {
               onChange={change('website')}
             />
           </label>
-
-          {RECAPTCHA_SITE_KEY ? (
-            <div
-              className="recaptcha-widget-card"
-              style={{
-                margin: '16px auto 20px',
-                display: 'flex',
-                justifyContent: 'center',
-                minHeight: '78px'
-              }}
-            >
-              <div ref={recaptchaContainerRef} />
-            </div>
-          ) : null}
 
           <button disabled={sending} className="button gold submit">
             <Send />
