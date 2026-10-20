@@ -10,7 +10,7 @@ const envUrl = (import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || '').trim();
 export const GOOGLE_APPS_SCRIPT_URL =
   (envUrl && !STALE_URLS.includes(envUrl)) ? envUrl : ACTIVE_CMS_URL;
 
-const DEFAULT_RECAPTCHA_SITE_KEY = '6LeBsfgtAAAAAARQQmq2qacMjQ1y8jM8eg0-l128';
+const DEFAULT_RECAPTCHA_SITE_KEY = '6LeBsfgtAAAAACCwrgTjKXZu-jSPc2RiYu22uCqV';
 
 export const RECAPTCHA_SITE_KEY =
   (import.meta.env.VITE_RECAPTCHA_SITE_KEY || DEFAULT_RECAPTCHA_SITE_KEY).trim();

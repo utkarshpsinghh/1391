@@ -12,7 +12,7 @@ const DETAILS_SPREADSHEET_ID = '1-f8iKPpN7Leshbf_JzVL3QwbTpvU0j_3HlurXVI4nNY';
 const ENQUIRIES_SPREADSHEET_ID = '1NI7nsi0Zy23mndt7NzI2r4qog3TNE6r5s-Mc1b90Hd8';
 
 // Paste your Google reCAPTCHA v2 Secret Key here:
-const RECAPTCHA_SECRET_KEY = '';
+const RECAPTCHA_SECRET_KEY = '6LeBsfgtAAAAAARQQmq2qacMjQ1y8jM8eg0-l128';
 
 const DUPLICATE_WINDOW_HOURS = 24;
 
