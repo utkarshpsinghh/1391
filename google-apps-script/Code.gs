@@ -148,9 +148,8 @@ function doPost(event) {
       return json_({ ok: true, ignored: true, reason: 'unauthorized_client' });
     }
 
-    // 2. Kingdom verification code challenge (must answer 1391)
-    const securityCode = String(payload.securityCode || '').trim();
-    if (securityCode !== '1391') {
+    // 2. Kingdom verification code challenge (optional legacy fallback)
+    if (payload.securityCode && String(payload.securityCode).trim() !== '1391') {
       return json_({ ok: true, ignored: true, reason: 'invalid_security_code' });
     }
 
@@ -159,8 +158,8 @@ function doPost(event) {
       return json_({ ok: true, ignored: true, reason: 'honeypot' });
     }
 
-    // 4. Minimum completion time check (must take at least 2.5 seconds)
-    if (!payload.formStartedAt || Date.now() - Number(payload.formStartedAt) < 2500) {
+    // 4. Minimum completion time check (must take at least 1.5 seconds)
+    if (!payload.formStartedAt || Date.now() - Number(payload.formStartedAt) < 1500) {
       return json_({ ok: true, ignored: true, reason: 'too_fast' });
     }
 

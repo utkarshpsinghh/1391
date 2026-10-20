@@ -23,20 +23,13 @@ export const Apply: React.FC = () => {
     playerName: '',
     playerId: '',
     power: '',
-    fcLevel: '',
-    tgCenterLevel: '',
-    archersLevel: '',
-    infantryLevel: '',
-    cavalryLevel: '',
     currentKingdom: '',
     currentAlliance: '',
     preferredAlliance: params.get('alliance') || 'Not Sure Yet',
-    preferredEventTime: '',
-    playstyle: 'Casual',
+    fcLevel: '',
     discordUsername: '',
     message: '',
-    website: '',
-    securityCode: ''
+    website: ''
   });
 
   const [err, setErr] = useState('');
@@ -72,13 +65,7 @@ export const Apply: React.FC = () => {
       ['playerName', 'player name'],
       ['playerId', 'Game ID'],
       ['currentKingdom', 'current kingdom'],
-      ['currentAlliance', 'current alliance'],
-      ['power', 'power'],
-      ['tgCenterLevel', 'TG Center level'],
-      ['archersLevel', 'Archers level'],
-      ['infantryLevel', 'Infantry level'],
-      ['cavalryLevel', 'Cavalry level'],
-      ['securityCode', 'Kingdom verification code (1391)']
+      ['power', 'power']
     ] as const;
 
     const missing = required.find(([key]) => !form[key].trim());
@@ -87,11 +74,6 @@ export const Apply: React.FC = () => {
       setErr(
         `We still need your ${missing[1]} before the messenger can deliver this scroll.`
       );
-      return;
-    }
-
-    if (form.securityCode.trim() !== '1391') {
-      setErr('Please enter the kingdom number (1391) in Kingdom Verification to verify you are human.');
       return;
     }
 
@@ -116,7 +98,7 @@ export const Apply: React.FC = () => {
       }
     }
 
-    if (Date.now() - startedAt.current < 2500) {
+    if (Date.now() - startedAt.current < 2000) {
       setErr('Please take a moment to review your application before sending.');
       return;
     }
@@ -143,7 +125,6 @@ export const Apply: React.FC = () => {
       ...form,
       recaptchaToken: finalRecaptchaToken,
       securityToken: SECURITY_TOKEN,
-      securityCode: form.securityCode.trim(),
       formStartedAt: startedAt.current,
       submittedAt: Date.now()
     };
@@ -223,17 +204,17 @@ export const Apply: React.FC = () => {
 
           {err && <div className="form-error">📝 {err}</div>}
 
-          <label>
-            PLAYER NAME *
-            <input
-              required
-              value={form.playerName}
-              onChange={change('playerName')}
-              placeholder="Your in-game name"
-            />
-          </label>
-
           <div className="two">
+            <label>
+              PLAYER NAME *
+              <input
+                required
+                value={form.playerName}
+                onChange={change('playerName')}
+                placeholder="Your in-game name"
+              />
+            </label>
+
             <label>
               GAME ID *
               <input
@@ -241,16 +222,6 @@ export const Apply: React.FC = () => {
                 value={form.playerId}
                 onChange={change('playerId')}
                 placeholder="e.g. 2088-85630"
-              />
-            </label>
-
-            <label>
-              POWER *
-              <input
-                required
-                value={form.power}
-                onChange={change('power')}
-                placeholder="Your current power"
               />
             </label>
           </div>
@@ -267,67 +238,23 @@ export const Apply: React.FC = () => {
             </label>
 
             <label>
-              CURRENT ALLIANCE *
+              POWER *
               <input
                 required
+                value={form.power}
+                onChange={change('power')}
+                placeholder="Your current power"
+              />
+            </label>
+          </div>
+
+          <div className="two">
+            <label>
+              CURRENT ALLIANCE
+              <input
                 value={form.currentAlliance}
                 onChange={change('currentAlliance')}
-                placeholder="Your current alliance"
-              />
-            </label>
-          </div>
-
-          <div className="two">
-            <label>
-              TG CENTER LEVEL *
-              <input
-                required
-                value={form.tgCenterLevel}
-                onChange={change('tgCenterLevel')}
-                placeholder="e.g. 30"
-              />
-            </label>
-
-            <label>
-              FC / KEY STATS
-              <input
-                value={form.fcLevel}
-                onChange={change('fcLevel')}
-                placeholder="e.g. FC 5 / 50 POT"
-              />
-            </label>
-          </div>
-
-          <div className="two">
-            <label>
-              ARCHERS LEVEL *
-              <input
-                required
-                value={form.archersLevel}
-                onChange={change('archersLevel')}
-                placeholder="e.g. T10"
-              />
-            </label>
-
-            <label>
-              INFANTRY LEVEL *
-              <input
-                required
-                value={form.infantryLevel}
-                onChange={change('infantryLevel')}
-                placeholder="e.g. T10"
-              />
-            </label>
-          </div>
-
-          <div className="two">
-            <label>
-              CAVALRY LEVEL *
-              <input
-                required
-                value={form.cavalryLevel}
-                onChange={change('cavalryLevel')}
-                placeholder="e.g. T10"
+                placeholder="e.g. None / HOT"
               />
             </label>
 
@@ -346,55 +273,30 @@ export const Apply: React.FC = () => {
 
           <div className="two">
             <label>
-              PREFERRED EVENT TIME
+              FC / TROOPS (OPTIONAL)
               <input
-                value={form.preferredEventTime}
-                onChange={change('preferredEventTime')}
-                placeholder="e.g. 16:00 UTC"
+                value={form.fcLevel}
+                onChange={change('fcLevel')}
+                placeholder="e.g. FC 5, T10"
               />
             </label>
 
             <label>
-              PLAYSTYLE
-              <select value={form.playstyle} onChange={change('playstyle')}>
-                <option>Casual</option>
-                <option>Active</option>
-                <option>Competitive</option>
-                <option>War-focused</option>
-                <option>Social</option>
-              </select>
+              DISCORD USERNAME (OPTIONAL)
+              <input
+                value={form.discordUsername}
+                onChange={change('discordUsername')}
+                placeholder="e.g. player#1234"
+              />
             </label>
           </div>
 
           <label>
-            DISCORD USERNAME
-            <input
-              value={form.discordUsername}
-              onChange={change('discordUsername')}
-              placeholder="Optional"
-            />
-          </label>
-
-          <label>
-            MESSAGE
+            MESSAGE (OPTIONAL)
             <textarea
               value={form.message}
               onChange={change('message')}
-              placeholder="Tell us a little about yourself..."
-            />
-          </label>
-
-          <label className="security-check-label">
-            KINGDOM SECURITY CHECK *
-            <span style={{ display: 'block', fontSize: '0.85rem', opacity: 0.85, margin: '2px 0 6px' }}>
-              Confirm kingdom number (<b>1391</b>) to prove you are a human player:
-            </span>
-            <input
-              required
-              value={form.securityCode}
-              onChange={change('securityCode')}
-              placeholder="Enter 1391"
-              maxLength={10}
+              placeholder="Tell us a little about yourself, schedule, or questions..."
             />
           </label>
 
