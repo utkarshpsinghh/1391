@@ -26,7 +26,7 @@ export const Apply: React.FC = () => {
     currentKingdom: '',
     currentAlliance: '',
     preferredAlliance: params.get('alliance') || 'Not Sure Yet',
-    fcLevel: '',
+    tgCenterLevel: '',
     discordUsername: '',
     message: '',
     website: ''
@@ -123,6 +123,7 @@ export const Apply: React.FC = () => {
     const SECURITY_TOKEN = 'K1391_ROYAL_LEDGER_AUTH_2026';
     const payload = {
       ...form,
+      fcLevel: form.tgCenterLevel,
       recaptchaToken: finalRecaptchaToken,
       securityToken: SECURITY_TOKEN,
       formStartedAt: startedAt.current,
@@ -273,11 +274,11 @@ export const Apply: React.FC = () => {
 
           <div className="two">
             <label>
-              FC / TROOPS (OPTIONAL)
+              TG CENTER LEVEL (OPTIONAL)
               <input
-                value={form.fcLevel}
-                onChange={change('fcLevel')}
-                placeholder="e.g. FC 5, T10"
+                value={form.tgCenterLevel}
+                onChange={change('tgCenterLevel')}
+                placeholder="e.g. TG 30 (FC 5)"
               />
             </label>
 

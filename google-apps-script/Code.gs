@@ -238,14 +238,12 @@ function appendEnquiryRowDynamically_(sheet, payload) {
       newRow[col] = payload.playerId || '';
     } else if (h.includes('power')) {
       newRow[col] = payload.power || '';
-    } else if (h.includes('fc') || h.includes('stats')) {
-      newRow[col] = payload.fcLevel || '';
+    } else if (h.includes('fc') || h.includes('tg') || h.includes('center') || h.includes('stats')) {
+      newRow[col] = payload.tgCenterLevel || payload.fcLevel || '';
     } else if (h.includes('current kingdom') || h.includes('kingdom')) {
       newRow[col] = payload.currentKingdom || '';
     } else if (h.includes('current alliance')) {
       newRow[col] = payload.currentAlliance || '';
-    } else if (h.includes('tg') || h.includes('center')) {
-      newRow[col] = payload.tgCenterLevel || '';
     } else if (h.includes('archer')) {
       newRow[col] = payload.archersLevel || '';
     } else if (h.includes('infantry')) {
