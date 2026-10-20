@@ -716,19 +716,19 @@ function initDetailsSheetsIfMissing_(wb) {
   }
 
   // 3. Dedicated Alliance Leaders Sheet (CONTACT THE LEADERS)
-  let lSheet = wb.getSheetByName('Alliance_Leaders');
-  if (!lSheet) {
-    lSheet = wb.insertSheet('Alliance_Leaders');
-    lSheet.appendRow(['Alliance ID', 'Leader Name', 'Player ID', 'Role / Notes']);
-    lSheet.appendRow(['HOT', 'Sally', '208885630', 'Leader']);
-    lSheet.appendRow(['HOT', 'MoonLight', '202703263', 'Leader']);
-    lSheet.appendRow(['VIK', 'Sigurd', '202736204', 'Leader']);
-    lSheet.appendRow(['NAT', 'Madara Uchiha', '204128952', 'Leader']);
-    lSheet.appendRow(['MAD', 'Valkyrie', '205439578', 'Leader']);
-    lSheet.appendRow(['MAD', 'Ernie', '205079469', 'Leader']);
-    lSheet.appendRow(['SDB', 'Maddawg', '202720532', 'Leader']);
-    lSheet.setFrozenRows(1);
-    lSheet.getRange(1, 1, 1, 4).setFontWeight('bold');
+  let alSheet = wb.getSheetByName('Alliance_Leaders');
+  if (!alSheet) {
+    alSheet = wb.insertSheet('Alliance_Leaders');
+    alSheet.appendRow(['Alliance ID', 'Leader Name', 'Player ID', 'Role / Notes']);
+    alSheet.appendRow(['HOT', 'Sally', '208885630', 'Leader']);
+    alSheet.appendRow(['HOT', 'MoonLight', '202703263', 'Leader']);
+    alSheet.appendRow(['VIK', 'Sigurd', '202736204', 'Leader']);
+    alSheet.appendRow(['NAT', 'Madara Uchiha', '204128952', 'Leader']);
+    alSheet.appendRow(['MAD', 'Valkyrie', '205439578', 'Leader']);
+    alSheet.appendRow(['MAD', 'Ernie', '205079469', 'Leader']);
+    alSheet.appendRow(['SDB', 'Maddawg', '202720532', 'Leader']);
+    alSheet.setFrozenRows(1);
+    alSheet.getRange(1, 1, 1, 4).setFontWeight('bold');
   }
 
   // 4. Team Sheet
@@ -806,49 +806,49 @@ function initDetailsSheetsIfMissing_(wb) {
   }
 
   // 8. Leaderboard Sheet
-  let lSheet = wb.getSheetByName('Leaderboard');
-  if (!lSheet) {
-    lSheet = wb.insertSheet('Leaderboard');
-    lSheet.appendRow(['Category', 'Rank', 'Player Name', 'Alliance', 'Score / Power', 'Score Label', 'Avatar URL', 'Updated At']);
+  let lbSheet = wb.getSheetByName('Leaderboard');
+  if (!lbSheet) {
+    lbSheet = wb.insertSheet('Leaderboard');
+    lbSheet.appendRow(['Category', 'Rank', 'Player Name', 'Alliance', 'Score / Power', 'Score Label', 'Avatar URL', 'Updated At']);
     
     // Alliance Rankings
-    lSheet.appendRow(['Alliance Power', 1, 'OneForAll', 'HOT', '18,450,000,000', 'Alliance Power', '', new Date()]);
-    lSheet.appendRow(['Alliance Power', 2, 'NastyAzzTroops', 'NAT', '16,920,000,000', 'Alliance Power', '', new Date()]);
-    lSheet.appendRow(['Alliance Power', 3, 'VikingsValhalla', 'VIK', '14,210,000,000', 'Alliance Power', '', new Date()]);
-    lSheet.appendRow(['Alliance Power', 4, 'MadChaos', 'MAD', '12,800,000,000', 'Alliance Power', '', new Date()]);
-    lSheet.appendRow(['Alliance Power', 5, 'SquadDownBad', 'SDB', '10,500,000,000', 'Alliance Power', '', new Date()]);
+    lbSheet.appendRow(['Alliance Power', 1, 'OneForAll', 'HOT', '18,450,000,000', 'Alliance Power', '', new Date()]);
+    lbSheet.appendRow(['Alliance Power', 2, 'NastyAzzTroops', 'NAT', '16,920,000,000', 'Alliance Power', '', new Date()]);
+    lbSheet.appendRow(['Alliance Power', 3, 'VikingsValhalla', 'VIK', '14,210,000,000', 'Alliance Power', '', new Date()]);
+    lbSheet.appendRow(['Alliance Power', 4, 'MadChaos', 'MAD', '12,800,000,000', 'Alliance Power', '', new Date()]);
+    lbSheet.appendRow(['Alliance Power', 5, 'SquadDownBad', 'SDB', '10,500,000,000', 'Alliance Power', '', new Date()]);
 
-    lSheet.appendRow(['Alliance Kills', 1, 'NastyAzzTroops', 'NAT', '4,820,000,000', 'Alliance Kills', '', new Date()]);
-    lSheet.appendRow(['Alliance Kills', 2, 'OneForAll', 'HOT', '4,150,000,000', 'Alliance Kills', '', new Date()]);
-    lSheet.appendRow(['Alliance Kills', 3, 'VikingsValhalla', 'VIK', '3,600,000,000', 'Alliance Kills', '', new Date()]);
-    lSheet.appendRow(['Alliance Kills', 4, 'MadChaos', 'MAD', '2,950,000,000', 'Alliance Kills', '', new Date()]);
-    lSheet.appendRow(['Alliance Kills', 5, 'SquadDownBad', 'SDB', '2,400,000,000', 'Alliance Kills', '', new Date()]);
+    lbSheet.appendRow(['Alliance Kills', 1, 'NastyAzzTroops', 'NAT', '4,820,000,000', 'Alliance Kills', '', new Date()]);
+    lbSheet.appendRow(['Alliance Kills', 2, 'OneForAll', 'HOT', '4,150,000,000', 'Alliance Kills', '', new Date()]);
+    lbSheet.appendRow(['Alliance Kills', 3, 'VikingsValhalla', 'VIK', '3,600,000,000', 'Alliance Kills', '', new Date()]);
+    lbSheet.appendRow(['Alliance Kills', 4, 'MadChaos', 'MAD', '2,950,000,000', 'Alliance Kills', '', new Date()]);
+    lbSheet.appendRow(['Alliance Kills', 5, 'SquadDownBad', 'SDB', '2,400,000,000', 'Alliance Kills', '', new Date()]);
 
     // Top 10 Personal Power (From in-game screenshot)
-    lSheet.appendRow(['Personal Power', 1, 'PIGTATORDADDy', 'NAT', '671,030,304', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 2, 'EhMoose', 'NAT', '642,252,053', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 3, 'KLITlicker', 'VIK', '509,439,874', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 4, 'SuperBumbleBeep', 'HOT', '488,208,722', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 5, 'Moha HOT', 'HOT', '453,022,202', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 6, 'P@nd@', 'HOT', '433,211,587', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 7, 'OL DAWG', 'VIK', '428,787,600', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 8, 'King_Slayer', 'NAT', '412,550,120', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 9, 'Valkyrie', 'MAD', '405,190,400', 'Power', '', new Date()]);
-    lSheet.appendRow(['Personal Power', 10, 'Maddawg', 'SDB', '398,420,950', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 1, 'PIGTATORDADDy', 'NAT', '671,030,304', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 2, 'EhMoose', 'NAT', '642,252,053', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 3, 'KLITlicker', 'VIK', '509,439,874', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 4, 'SuperBumbleBeep', 'HOT', '488,208,722', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 5, 'Moha HOT', 'HOT', '453,022,202', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 6, 'P@nd@', 'HOT', '433,211,587', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 7, 'OL DAWG', 'VIK', '428,787,600', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 8, 'King_Slayer', 'NAT', '412,550,120', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 9, 'Valkyrie', 'MAD', '405,190,400', 'Power', '', new Date()]);
+    lbSheet.appendRow(['Personal Power', 10, 'Maddawg', 'SDB', '398,420,950', 'Power', '', new Date()]);
 
     // Private categories from screenshots
-    lSheet.appendRow(['Town Center Level', 1, 'East_666', 'NAT', 'TG 30 (FC 5)', 'TG Level', '', new Date()]);
-    lSheet.appendRow(['Kill Count', 1, 'PIGTATORDADDy', 'NAT', '1,420,550,230', 'Kills', '', new Date()]);
-    lSheet.appendRow(['Rebel Conquest Stage', 1, 'PIGTATORDADDy', 'NAT', 'Stage 420', 'Stage', '', new Date()]);
-    lSheet.appendRow(['Hero Power', 1, 'PIGTATORDADDy', 'NAT', '85,420,000', 'Hero Power', '', new Date()]);
-    lSheet.appendRow(['Hero\'s Total Power', 1, 'PIGTATORDADDy', 'NAT', '195,800,000', 'Total Hero Power', '', new Date()]);
-    lSheet.appendRow(['Total Pet Power', 1, 'SuperBumbleBeep', 'HOT', '68,230,000', 'Pet Power', '', new Date()]);
-    lSheet.appendRow(['Island Prosperity', 1, 'EhMoose', 'NAT', '14,850', 'Prosperity', '', new Date()]);
-    lSheet.appendRow(['Mystic Trial', 1, 'EhMoose', 'NAT', 'Floor 850', 'Floor', '', new Date()]);
-    lSheet.appendRow(['Master Total Power', 1, 'SuperBumbleBeep', 'HOT', '312,400,000', 'Master Power', '', new Date()]);
+    lbSheet.appendRow(['Town Center Level', 1, 'East_666', 'NAT', 'TG 30 (FC 5)', 'TG Level', '', new Date()]);
+    lbSheet.appendRow(['Kill Count', 1, 'PIGTATORDADDy', 'NAT', '1,420,550,230', 'Kills', '', new Date()]);
+    lbSheet.appendRow(['Rebel Conquest Stage', 1, 'PIGTATORDADDy', 'NAT', 'Stage 420', 'Stage', '', new Date()]);
+    lbSheet.appendRow(['Hero Power', 1, 'PIGTATORDADDy', 'NAT', '85,420,000', 'Hero Power', '', new Date()]);
+    lbSheet.appendRow(['Hero\'s Total Power', 1, 'PIGTATORDADDy', 'NAT', '195,800,000', 'Total Hero Power', '', new Date()]);
+    lbSheet.appendRow(['Total Pet Power', 1, 'SuperBumbleBeep', 'HOT', '68,230,000', 'Pet Power', '', new Date()]);
+    lbSheet.appendRow(['Island Prosperity', 1, 'EhMoose', 'NAT', '14,850', 'Prosperity', '', new Date()]);
+    lbSheet.appendRow(['Mystic Trial', 1, 'EhMoose', 'NAT', 'Floor 850', 'Floor', '', new Date()]);
+    lbSheet.appendRow(['Master Total Power', 1, 'SuperBumbleBeep', 'HOT', '312,400,000', 'Master Power', '', new Date()]);
 
-    lSheet.setFrozenRows(1);
-    lSheet.getRange(1, 1, 1, 8).setFontWeight('bold');
+    lbSheet.setFrozenRows(1);
+    lbSheet.getRange(1, 1, 1, 8).setFontWeight('bold');
   }
 }
 
