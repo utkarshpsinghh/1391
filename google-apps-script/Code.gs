@@ -11,6 +11,9 @@ const DETAILS_SPREADSHEET_ID = '1-f8iKPpN7Leshbf_JzVL3QwbTpvU0j_3HlurXVI4nNY';
 // Paste the Spreadsheet ID of your ENQUIRIES sheet:
 const ENQUIRIES_SPREADSHEET_ID = '1NI7nsi0Zy23mndt7NzI2r4qog3TNE6r5s-Mc1b90Hd8';
 
+// Paste your Google reCAPTCHA v2 Secret Key here:
+const RECAPTCHA_SECRET_KEY = '';
+
 const DUPLICATE_WINDOW_HOURS = 24;
 
 /**
@@ -132,6 +135,13 @@ function doPost(event) {
   try {
     const payload = JSON.parse((event && event.postData && event.postData.contents) || '{}');
     
+    // 0. Google reCAPTCHA verification check (if configured)
+    if (RECAPTCHA_SECRET_KEY && RECAPTCHA_SECRET_KEY.trim() !== '') {
+      if (!verifyGoogleRecaptcha_(payload.recaptchaToken)) {
+        return json_({ ok: false, error: 'Google reCAPTCHA verification failed. Please complete the verification challenge.' });
+      }
+    }
+
     // 1. Mandatory application secret token check (drops direct automated script hits)
     const REQUIRED_TOKEN = 'K1391_ROYAL_LEDGER_AUTH_2026';
     if (!payload.securityToken || payload.securityToken !== REQUIRED_TOKEN) {
@@ -340,6 +350,33 @@ function cleanSpamEnquiries() {
   }
 
   ui.alert('🧹 Anti-Spam Cleanup Complete!\n\nDeleted ' + deletedCount + ' spam rows.');
+}
+
+/**
+ * Validates Google reCAPTCHA token with Google's siteverify API
+ */
+function verifyGoogleRecaptcha_(token) {
+  if (!RECAPTCHA_SECRET_KEY || RECAPTCHA_SECRET_KEY.trim() === '') {
+    return true; // Not configured yet, pass through
+  }
+  if (!token) return false;
+
+  try {
+    const url = 'https://www.google.com/recaptcha/api/siteverify';
+    const response = UrlFetchApp.fetch(url, {
+      method: 'post',
+      payload: {
+        secret: RECAPTCHA_SECRET_KEY.trim(),
+        response: token
+      },
+      muteHttpExceptions: true
+    });
+    const result = JSON.parse(response.getContentText() || '{}');
+    return Boolean(result && result.success);
+  } catch (err) {
+    Logger.log('Google reCAPTCHA verification error: ' + err);
+    return false;
+  }
 }
 
 /**

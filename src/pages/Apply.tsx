@@ -1,16 +1,27 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
 import { PageHero } from '../components/PageHero';
 import { Button } from '../components/Button';
 import { useKingdom } from '../context/KingdomContext';
-import { GOOGLE_APPS_SCRIPT_URL } from '../config';
+import { GOOGLE_APPS_SCRIPT_URL, RECAPTCHA_SITE_KEY } from '../config';
+
+declare global {
+  interface Window {
+    grecaptcha?: any;
+    onRecaptchaLoaded?: () => void;
+  }
+}
 
 export const Apply: React.FC = () => {
   const [params] = useSearchParams();
   const startedAt = useRef(Date.now());
   const { data } = useKingdom();
   const { alliances } = data;
+
+  const recaptchaContainerRef = useRef<HTMLDivElement | null>(null);
+  const recaptchaWidgetId = useRef<number | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string>('');
 
   const [form, setForm] = useState({
     playerName: '',
@@ -35,6 +46,51 @@ export const Apply: React.FC = () => {
   const [err, setErr] = useState('');
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
+
+  // Initialize Google reCAPTCHA v2 checkbox
+  useEffect(() => {
+    if (!RECAPTCHA_SITE_KEY) return;
+
+    const renderWidget = () => {
+      if (
+        window.grecaptcha &&
+        window.grecaptcha.render &&
+        recaptchaContainerRef.current &&
+        recaptchaWidgetId.current === null
+      ) {
+        try {
+          recaptchaWidgetId.current = window.grecaptcha.render(recaptchaContainerRef.current, {
+            sitekey: RECAPTCHA_SITE_KEY,
+            callback: (token: string) => {
+              setCaptchaToken(token);
+            },
+            'expired-callback': () => {
+              setCaptchaToken('');
+            }
+          });
+        } catch (e) {
+          console.warn('reCAPTCHA already rendered or error:', e);
+        }
+      }
+    };
+
+    const SCRIPT_ID = 'google-recaptcha-script';
+    let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement;
+
+    if (!script) {
+      script = document.createElement('script');
+      script.id = SCRIPT_ID;
+      script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoaded&render=explicit';
+      script.async = true;
+      script.defer = true;
+      window.onRecaptchaLoaded = () => {
+        renderWidget();
+      };
+      document.body.appendChild(script);
+    } else if (window.grecaptcha && window.grecaptcha.render) {
+      renderWidget();
+    }
+  }, []);
 
   const change =
     (key: keyof typeof form) =>
@@ -71,6 +127,21 @@ export const Apply: React.FC = () => {
       return;
     }
 
+    let finalRecaptchaToken = captchaToken;
+    if (RECAPTCHA_SITE_KEY) {
+      if (
+        !finalRecaptchaToken &&
+        window.grecaptcha &&
+        recaptchaWidgetId.current !== null
+      ) {
+        finalRecaptchaToken = window.grecaptcha.getResponse(recaptchaWidgetId.current);
+      }
+      if (!finalRecaptchaToken) {
+        setErr('Please check the "I\'m not a robot" reCAPTCHA box to verify your application.');
+        return;
+      }
+    }
+
     if (Date.now() - startedAt.current < 2500) {
       setErr('Please take a moment to review your application before sending.');
       return;
@@ -96,6 +167,7 @@ export const Apply: React.FC = () => {
     const SECURITY_TOKEN = 'K1391_ROYAL_LEDGER_AUTH_2026';
     const payload = {
       ...form,
+      recaptchaToken: finalRecaptchaToken,
       securityToken: SECURITY_TOKEN,
       securityCode: form.securityCode.trim(),
       formStartedAt: startedAt.current,
@@ -361,6 +433,20 @@ export const Apply: React.FC = () => {
               onChange={change('website')}
             />
           </label>
+
+          {RECAPTCHA_SITE_KEY ? (
+            <div
+              className="recaptcha-widget-card"
+              style={{
+                margin: '16px auto 20px',
+                display: 'flex',
+                justifyContent: 'center',
+                minHeight: '78px'
+              }}
+            >
+              <div ref={recaptchaContainerRef} />
+            </div>
+          ) : null}
 
           <button disabled={sending} className="button gold submit">
             <Send />
