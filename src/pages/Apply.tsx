@@ -16,6 +16,7 @@ export const Apply: React.FC = () => {
     playerName: '',
     playerId: '',
     power: '',
+    fcLevel: '',
     tgCenterLevel: '',
     archersLevel: '',
     infantryLevel: '',
@@ -27,7 +28,8 @@ export const Apply: React.FC = () => {
     playstyle: 'Casual',
     discordUsername: '',
     message: '',
-    website: ''
+    website: '',
+    securityCode: ''
   });
 
   const [err, setErr] = useState('');
@@ -51,7 +53,8 @@ export const Apply: React.FC = () => {
       ['tgCenterLevel', 'TG Center level'],
       ['archersLevel', 'Archers level'],
       ['infantryLevel', 'Infantry level'],
-      ['cavalryLevel', 'Cavalry level']
+      ['cavalryLevel', 'Cavalry level'],
+      ['securityCode', 'Kingdom verification code (1391)']
     ] as const;
 
     const missing = required.find(([key]) => !form[key].trim());
@@ -60,6 +63,16 @@ export const Apply: React.FC = () => {
       setErr(
         `We still need your ${missing[1]} before the messenger can deliver this scroll.`
       );
+      return;
+    }
+
+    if (form.securityCode.trim() !== '1391') {
+      setErr('Please enter the kingdom number (1391) in Kingdom Verification to verify you are human.');
+      return;
+    }
+
+    if (Date.now() - startedAt.current < 2500) {
+      setErr('Please take a moment to review your application before sending.');
       return;
     }
 
@@ -80,6 +93,15 @@ export const Apply: React.FC = () => {
     setErr('');
     setSending(true);
 
+    const SECURITY_TOKEN = 'K1391_ROYAL_LEDGER_AUTH_2026';
+    const payload = {
+      ...form,
+      securityToken: SECURITY_TOKEN,
+      securityCode: form.securityCode.trim(),
+      formStartedAt: startedAt.current,
+      submittedAt: Date.now()
+    };
+
     try {
       // POST with text/plain prevents CORS preflight and allows Apps Script to respond
       await fetch(endpoint, {
@@ -87,10 +109,7 @@ export const Apply: React.FC = () => {
         headers: {
           'Content-Type': 'text/plain;charset=utf-8'
         },
-        body: JSON.stringify({
-          ...form,
-          formStartedAt: startedAt.current
-        })
+        body: JSON.stringify(payload)
       });
 
       localStorage.setItem('k1391-application', JSON.stringify(form));
@@ -105,10 +124,7 @@ export const Apply: React.FC = () => {
           headers: {
             'Content-Type': 'text/plain;charset=utf-8'
           },
-          body: JSON.stringify({
-            ...form,
-            formStartedAt: startedAt.current
-          })
+          body: JSON.stringify(payload)
         });
         localStorage.setItem('k1391-application', JSON.stringify(form));
         localStorage.setItem('k1391-enquiry-sent-at', String(Date.now()));
@@ -227,6 +243,17 @@ export const Apply: React.FC = () => {
             </label>
 
             <label>
+              FC / KEY STATS
+              <input
+                value={form.fcLevel}
+                onChange={change('fcLevel')}
+                placeholder="e.g. FC 5 / 50 POT"
+              />
+            </label>
+          </div>
+
+          <div className="two">
+            <label>
               ARCHERS LEVEL *
               <input
                 required
@@ -235,9 +262,7 @@ export const Apply: React.FC = () => {
                 placeholder="e.g. T10"
               />
             </label>
-          </div>
 
-          <div className="two">
             <label>
               INFANTRY LEVEL *
               <input
@@ -247,7 +272,9 @@ export const Apply: React.FC = () => {
                 placeholder="e.g. T10"
               />
             </label>
+          </div>
 
+          <div className="two">
             <label>
               CAVALRY LEVEL *
               <input
@@ -257,19 +284,19 @@ export const Apply: React.FC = () => {
                 placeholder="e.g. T10"
               />
             </label>
-          </div>
 
-          <label>
-            PREFERRED ALLIANCE
-            <select
-              value={form.preferredAlliance}
-              onChange={change('preferredAlliance')}
-            >
-              {['Not Sure Yet', ...alliances.map(a => a.id)].map(x => (
-                <option key={x}>{x}</option>
-              ))}
-            </select>
-          </label>
+            <label>
+              PREFERRED ALLIANCE
+              <select
+                value={form.preferredAlliance}
+                onChange={change('preferredAlliance')}
+              >
+                {['Not Sure Yet', ...alliances.map(a => a.id)].map(x => (
+                  <option key={x}>{x}</option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           <div className="two">
             <label>
@@ -308,6 +335,20 @@ export const Apply: React.FC = () => {
               value={form.message}
               onChange={change('message')}
               placeholder="Tell us a little about yourself..."
+            />
+          </label>
+
+          <label className="security-check-label">
+            KINGDOM SECURITY CHECK *
+            <span style={{ display: 'block', fontSize: '0.85rem', opacity: 0.85, margin: '2px 0 6px' }}>
+              Confirm kingdom number (<b>1391</b>) to prove you are a human player:
+            </span>
+            <input
+              required
+              value={form.securityCode}
+              onChange={change('securityCode')}
+              placeholder="Enter 1391"
+              maxLength={10}
             />
           </label>
 

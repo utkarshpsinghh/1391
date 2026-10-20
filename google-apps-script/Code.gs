@@ -2,6 +2,7 @@
  * Kingdom 1391 Content Management & Enquiry Receiver
  * 
  * Optimized for high-speed delivery with single-batch sheet reads.
+ * Enhanced with multi-layered anti-spam shields & dynamic column mapping.
  */
 
 // Paste the Spreadsheet ID of your DETAILS sheet:
@@ -13,13 +14,15 @@ const ENQUIRIES_SPREADSHEET_ID = '1NI7nsi0Zy23mndt7NzI2r4qog3TNE6r5s-Mc1b90Hd8';
 const DUPLICATE_WINDOW_HOURS = 24;
 
 /**
- * Adds a custom menu to Google Sheets for easy one-click setup
+ * Adds a custom menu to Google Sheets for easy one-click setup & spam cleaning
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Kingdom 1391')
     .addItem('Initialize Details Sheet', 'setupDetailsSheet')
     .addItem('Initialize Enquiries Sheet', 'setupEnquiriesSheet')
+    .addSeparator()
+    .addItem('Clean Spam Enquiries 🧹', 'cleanSpamEnquiries')
     .addSeparator()
     .addItem('Initialize Both Sheets', 'setupKingdomSheets')
     .addToUi();
@@ -75,7 +78,6 @@ function doGet(e) {
       }
     }
 
-
     const settings = getSettingsDataFromSheet_(sheetMap['Settings']);
     const leadersMap = getAllianceLeadersMapFromSheet_(sheetMap['Alliance_Leaders']);
     const alliances = getAlliancesDataFromSheet_(sheetMap['Alliances'], leadersMap);
@@ -124,21 +126,67 @@ function doGet(e) {
 
 /**
  * Handle POST requests for transfer application submissions into ENQUIRIES sheet
+ * Fortified with multi-layer anti-spam validation
  */
 function doPost(event) {
   try {
     const payload = JSON.parse((event && event.postData && event.postData.contents) || '{}');
     
-    // Honeypot check
+    // 1. Mandatory application secret token check (drops direct automated script hits)
+    const REQUIRED_TOKEN = 'K1391_ROYAL_LEDGER_AUTH_2026';
+    if (!payload.securityToken || payload.securityToken !== REQUIRED_TOKEN) {
+      return json_({ ok: true, ignored: true, reason: 'unauthorized_client' });
+    }
+
+    // 2. Kingdom verification code challenge (must answer 1391)
+    const securityCode = String(payload.securityCode || '').trim();
+    if (securityCode !== '1391') {
+      return json_({ ok: true, ignored: true, reason: 'invalid_security_code' });
+    }
+
+    // 3. Honeypot check (hidden field)
     if (payload.website || !payload.playerName) {
-      return json_({ ok: true, ignored: true });
+      return json_({ ok: true, ignored: true, reason: 'honeypot' });
     }
 
-    // Minimum completion time check
-    if (!payload.formStartedAt || Date.now() - Number(payload.formStartedAt) < 2000) {
-      return json_({ ok: true, ignored: true });
+    // 4. Minimum completion time check (must take at least 2.5 seconds)
+    if (!payload.formStartedAt || Date.now() - Number(payload.formStartedAt) < 2500) {
+      return json_({ ok: true, ignored: true, reason: 'too_fast' });
     }
 
+    // 5. Pattern-based bot filters (specifically stops automated spam bots)
+    const playerName = String(payload.playerName || '').trim();
+    const playerId = String(payload.playerId || '').trim();
+    const discord = String(payload.discordUsername || '').trim();
+    const message = String(payload.message || '').trim();
+
+    if (/^PLAYER\s*\d+$/i.test(playerName) || /^TEST\s*\d+$/i.test(playerName)) {
+      return json_({ ok: true, ignored: true, reason: 'spam_name_pattern' });
+    }
+    if (/^\d{4}\s*1414$/.test(playerId)) {
+      return json_({ ok: true, ignored: true, reason: 'spam_id_pattern' });
+    }
+    if (/stop\s*spam/i.test(discord) || /stop\s*spam/i.test(message) || /stop\s*spam/i.test(playerName)) {
+      return json_({ ok: true, ignored: true, reason: 'spam_message' });
+    }
+
+    // 6. Global submission rate limiter using CacheService
+    const cache = CacheService.getScriptCache();
+    // 15-second cooldown lock between any two submissions
+    if (cache.get('enquiry_lock')) {
+      return json_({ ok: true, ignored: true, reason: 'cooldown_active' });
+    }
+    cache.put('enquiry_lock', '1', 15);
+
+    // Hourly cap (maximum 15 submissions per hour)
+    const hourBucket = 'enquiry_h_' + Math.floor(Date.now() / 3600000);
+    const hourlyCount = Number(cache.get(hourBucket) || '0');
+    if (hourlyCount >= 15) {
+      return json_({ ok: true, ignored: true, reason: 'hourly_cap_exceeded' });
+    }
+    cache.put(hourBucket, String(hourlyCount + 1), 3600);
+
+    // 7. Concurrency lock & duplicate check
     const lock = LockService.getScriptLock();
     lock.waitLock(10000);
 
@@ -150,29 +198,65 @@ function doPost(event) {
       return json_({ ok: true, duplicate: true });
     }
 
-    sheet.appendRow([
-      new Date(),
-      payload.playerName || '',
-      payload.playerId || '',
-      payload.power || '',
-      payload.currentKingdom || '',
-      payload.currentAlliance || '',
-      payload.tgCenterLevel || '',
-      payload.archersLevel || '',
-      payload.infantryLevel || '',
-      payload.cavalryLevel || '',
-      payload.preferredAlliance || '',
-      payload.preferredEventTime || '',
-      payload.playstyle || '',
-      payload.discordUsername || '',
-      payload.message || ''
-    ]);
+    // 8. Column-aware dynamic row appending (matches headers dynamically so columns never shift)
+    appendEnquiryRowDynamically_(sheet, payload);
 
     lock.releaseLock();
     return json_({ ok: true });
   } catch (error) {
     return json_({ ok: false, error: String(error) });
   }
+}
+
+/**
+ * Dynamically appends enquiry based on current sheet header names
+ * Prevents column misalignments even if user adds or reorders columns like "FC / Key stats"
+ */
+function appendEnquiryRowDynamically_(sheet, payload) {
+  const lastCol = Math.max(sheet.getLastColumn(), 16);
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const newRow = new Array(headers.length).fill('');
+
+  for (var col = 0; col < headers.length; col++) {
+    const h = String(headers[col] || '').toLowerCase().trim();
+    if (!h) continue;
+
+    if (h.includes('submitted')) {
+      newRow[col] = new Date();
+    } else if (h.includes('player name') || h === 'name') {
+      newRow[col] = payload.playerName || '';
+    } else if (h.includes('player id') || h === 'id' || h.includes('game id')) {
+      newRow[col] = payload.playerId || '';
+    } else if (h.includes('power')) {
+      newRow[col] = payload.power || '';
+    } else if (h.includes('fc') || h.includes('stats')) {
+      newRow[col] = payload.fcLevel || '';
+    } else if (h.includes('current kingdom') || h.includes('kingdom')) {
+      newRow[col] = payload.currentKingdom || '';
+    } else if (h.includes('current alliance')) {
+      newRow[col] = payload.currentAlliance || '';
+    } else if (h.includes('tg') || h.includes('center')) {
+      newRow[col] = payload.tgCenterLevel || '';
+    } else if (h.includes('archer')) {
+      newRow[col] = payload.archersLevel || '';
+    } else if (h.includes('infantry')) {
+      newRow[col] = payload.infantryLevel || '';
+    } else if (h.includes('cavalry')) {
+      newRow[col] = payload.cavalryLevel || '';
+    } else if (h.includes('preferred allian')) {
+      newRow[col] = payload.preferredAlliance || '';
+    } else if (h.includes('event time') || h.includes('preferred event')) {
+      newRow[col] = payload.preferredEventTime || '';
+    } else if (h.includes('playstyle')) {
+      newRow[col] = payload.playstyle || '';
+    } else if (h.includes('discord')) {
+      newRow[col] = payload.discordUsername || '';
+    } else if (h.includes('message')) {
+      newRow[col] = payload.message || '';
+    }
+  }
+
+  sheet.appendRow(newRow);
 }
 
 /**
@@ -190,7 +274,7 @@ function hasRecentDuplicate_(sheet, payload) {
   if (lastRow < 2) return false;
 
   const firstDataRow = Math.max(2, lastRow - 499);
-  const rows = sheet.getRange(firstDataRow, 1, lastRow - firstDataRow + 1, 15).getValues();
+  const rows = sheet.getRange(firstDataRow, 1, lastRow - firstDataRow + 1, sheet.getLastColumn()).getValues();
   const cutoff = Date.now() - DUPLICATE_WINDOW_HOURS * 60 * 60 * 1000;
 
   return rows.some(function (row) {
@@ -199,7 +283,7 @@ function hasRecentDuplicate_(sheet, payload) {
 
     const rowPlayerId = normalize_(row[2]);
     const rowPlayerName = normalize_(row[1]);
-    const rowDiscord = normalize_(row[13]);
+    const rowDiscord = normalize_(row[13] || row[14]);
 
     if (normPlayerId && rowPlayerId && normPlayerId === rowPlayerId) {
       return true;
@@ -213,6 +297,49 @@ function hasRecentDuplicate_(sheet, payload) {
 
 function normalize_(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '');
+}
+
+/**
+ * One-click helper function to clean spam rows from Enquiries sheet
+ * Run this from the "Kingdom 1391" -> "Clean Spam Enquiries 🧹" menu in Google Sheets
+ */
+function cleanSpamEnquiries() {
+  const ui = SpreadsheetApp.getUi();
+  const wb = getEnquiriesWorkbook_();
+  const sheet = getEnquiriesSheet_(wb);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    ui.alert('Enquiries sheet is already clean.');
+    return;
+  }
+
+  const lastCol = Math.max(sheet.getLastColumn(), 16);
+  const data = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  let deletedCount = 0;
+
+  // Scan backwards so row indexes remain correct when deleting
+  for (var i = data.length - 1; i >= 0; i--) {
+    const row = data[i];
+    const rowNum = i + 2;
+
+    const rowStr = row.map(function(c) { return String(c || ''); }).join(' ').toLowerCase();
+    const name = String(row[1] || '').trim();
+    const id = String(row[2] || '').trim();
+
+    const isSpam = 
+      /^PLAYER\s*\d+$/i.test(name) ||
+      /^TEST\s*\d+$/i.test(name) ||
+      /^\d{4}\s*1414$/.test(id) ||
+      rowStr.includes('stop spam') ||
+      rowStr.includes('stopspam');
+
+    if (isSpam) {
+      sheet.deleteRow(rowNum);
+      deletedCount++;
+    }
+  }
+
+  ui.alert('🧹 Anti-Spam Cleanup Complete!\n\nDeleted ' + deletedCount + ' spam rows.');
 }
 
 /**
@@ -261,6 +388,7 @@ function getAllianceLeadersMapFromSheet_(sheet) {
 
 /**
  * Reads Alliances sheet and merges contacts from Alliance_Leaders
+ * Supports column 14 "Flag URL" to add or remove flags via Google Sheets
  */
 function getAlliancesDataFromSheet_(sheet, leadersMap) {
   if (!sheet) return [];
@@ -311,6 +439,7 @@ function getAlliancesDataFromSheet_(sheet, leadersMap) {
         swordland: parseTimes(r[11]),
         threeAlliance: parseTimes(r[12])
       },
+      flagUrl: String(r[13] || '').trim(),
       contacts: contacts
     });
   }
@@ -462,7 +591,6 @@ function getLeaderboardLastSyncedAt_(sheet) {
   return new Date().toISOString();
 }
 
-
 /**
  * Reads Settings sheet
  */
@@ -552,7 +680,7 @@ function initDetailsSheetsIfMissing_(wb) {
     sSheet.getRange(1, 1, 1, 3).setFontWeight('bold');
   }
 
-  // 2. Alliances Sheet
+  // 2. Alliances Sheet (Supports column 14: Flag URL or 'none' to hide)
   let aSheet = wb.getSheetByName('Alliances');
   if (!aSheet) {
     aSheet = wb.insertSheet('Alliances');
@@ -560,30 +688,31 @@ function initDetailsSheetsIfMissing_(wb) {
       'Alliance ID', 'Full Name', 'Description', 'Playstyle', 'Transfer Status (OPEN/CLOSED)',
       'Banner Color', 'Crest Symbol', 'Bear Event Times (UTC)', 'Vikings Event Times (UTC)',
       'Contact Names (fallback)', 'Contact IDs (fallback)',
-      'Swordland Event Times (UTC)', '3Alliance Event Times (UTC)'
+      'Swordland Event Times (UTC)', '3Alliance Event Times (UTC)',
+      'Flag URL (or "none" to hide)'
     ]);
     aSheet.appendRow([
       'HOT', 'HOT Alliance', 'Warm welcome. Serious fun.', 'Active · Friendly · Competitive', 'OPEN',
-      '#bd4c2d', '✦', '00:30, 16:00', '01:00, 16:30', 'Sally, MoonLight', '208885630, 202703263', '02:00, 12:00', '02:00, 12:00'
+      '#bd4c2d', '✦', '00:30, 16:00', '01:00, 16:30', 'Sally, MoonLight', '208885630, 202703263', '02:00, 12:00', '02:00, 12:00', ''
     ]);
     aSheet.appendRow([
       'VIK', 'VIK Alliance', 'Organised, active and battle-ready.', 'Active · Battle-ready · Organised', 'OPEN',
-      '#315d93', 'ᛉ', '00:30, 16:30', '19:00', 'Sigurd', '202736204', '02:00, 19:00', '02:00, 19:00'
+      '#315d93', 'ᛉ', '00:30, 16:30', '19:00', 'Sigurd', '202736204', '02:00, 19:00', '02:00, 19:00', ''
     ]);
     aSheet.appendRow([
       'NAT', 'NAT Alliance', 'A balanced home for active players.', 'Active · Balanced · Social', 'OPEN',
-      '#5f873b', '❖', '14:00, 19:00, 23:00', '14:00', 'Madara Uchiha', '204128952', '19:00', '02:00, 19:00'
+      '#5f873b', '❖', '14:00, 19:00, 23:00', '14:00', 'Madara Uchiha', '204128952', '19:00', '02:00, 19:00', ''
     ]);
     aSheet.appendRow([
       'MAD', 'MAD Alliance', 'Competitive spirit with a chaotic charm.', 'Competitive · Active · War-focused', 'OPEN',
-      '#bd681a', '⚡', '02:30, 20:00', '01:00, 20:00', 'Valkyrie, Ernie', '205439578, 205079469', '02:00, 19:00', '02:00, 19:00'
+      '#bd681a', '⚡', '02:30, 20:00', '01:00, 20:00', 'Valkyrie, Ernie', '205439578, 205079469', '02:00, 19:00', '02:00, 19:00', ''
     ]);
     aSheet.appendRow([
       'SDB', 'SDB Alliance', 'Find your squad and settle in.', 'Social · Friendly · Active', 'OPEN',
-      '#76518d', '☾', '12:00, 18:00', '02:00, 13:00', 'Maddawg', '202720532', '02:00, 12:00', '02:00, 12:00'
+      '#76518d', '☾', '12:00, 18:00', '02:00, 13:00', 'Maddawg', '202720532', '02:00, 12:00', '02:00, 12:00', ''
     ]);
     aSheet.setFrozenRows(1);
-    aSheet.getRange(1, 1, 1, 13).setFontWeight('bold');
+    aSheet.getRange(1, 1, 1, 14).setFontWeight('bold');
   }
 
   // 3. Dedicated Alliance Leaders Sheet (CONTACT THE LEADERS)

@@ -20,6 +20,7 @@ export interface Alliance {
   crest: string;
   playstyle: string;
   transferStatus?: 'OPEN' | 'CLOSED' | 'INVITE ONLY' | string;
+  flagUrl?: string;
 }
 
 export interface TeamMember {

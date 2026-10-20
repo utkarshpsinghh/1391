@@ -13,7 +13,19 @@ export const AllianceBadge: React.FC<AllianceBadgeProps> = ({
   showTag = true
 }) => {
   const [imgError, setImgError] = useState(false);
-  const flagSrc = `/flags/${a.id.toUpperCase()}.png`;
+
+  // If Google Sheets specifies "none", "hide", "false", or "off", remove flag image and show crest badge
+  const isFlagDisabled =
+    Boolean(a.flagUrl) &&
+    ['none', 'hide', 'false', 'off', 'no'].includes(a.flagUrl!.toLowerCase().trim());
+
+  // Use custom flag URL from sheets if provided; otherwise fallback to local flag asset
+  const flagSrc =
+    !isFlagDisabled && a.flagUrl && a.flagUrl.trim().length > 0
+      ? a.flagUrl.trim()
+      : `/flags/${a.id.toUpperCase()}.png`;
+
+  const showFlagImage = !isFlagDisabled && !imgError;
 
   return (
     <div
@@ -22,7 +34,7 @@ export const AllianceBadge: React.FC<AllianceBadgeProps> = ({
       title={`${a.id} Alliance`}
     >
       <div className="alliance-flag-art">
-        {!imgError ? (
+        {showFlagImage ? (
           <img
             src={flagSrc}
             alt={`${a.id} Banner`}

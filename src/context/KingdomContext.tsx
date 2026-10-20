@@ -89,6 +89,7 @@ function sanitizeAlliances(list: any[]): Alliance[] {
       swordland: sanitizeTimes(a.events?.swordland),
       threeAlliance: sanitizeTimes(a.events?.threeAlliance)
     },
+    flagUrl: a.flagUrl ? String(a.flagUrl).trim() : undefined,
     contacts: Array.isArray(a.contacts) ? a.contacts : []
   }));
 }
