@@ -22,10 +22,11 @@ const DUPLICATE_WINDOW_HOURS = 24;
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Kingdom 1391')
+    .addItem('🧹 Clean & Reorganize Sheet (New 10-Col Format)', 'cleanAndMigrateSheetToNewFormat')
+    .addItem('Delete Spam Rows Only 🗑️', 'cleanSpamEnquiries')
+    .addSeparator()
     .addItem('Initialize Details Sheet', 'setupDetailsSheet')
     .addItem('Initialize Enquiries Sheet', 'setupEnquiriesSheet')
-    .addSeparator()
-    .addItem('Clean Spam Enquiries 🧹', 'cleanSpamEnquiries')
     .addSeparator()
     .addItem('Initialize Both Sheets', 'setupKingdomSheets')
     .addToUi();
@@ -310,6 +311,171 @@ function normalize_(value) {
  * One-click helper function to clean spam rows from Enquiries sheet
  * Run this from the "Kingdom 1391" -> "Clean Spam Enquiries 🧹" menu in Google Sheets
  */
+/**
+ * One-click helper: Cleans all spam rows and restructures Enquiries sheet
+ * to match the new 10-column Application page:
+ * [Submitted at, Player Name, Game ID, Current Kingdom, Power, Current Alliance, Preferred Alliance, TG Center Level, Discord Username, Message]
+ * Safely preserves genuine applicant rows and automatically backs up previous sheet data.
+ */
+function cleanAndMigrateSheetToNewFormat() {
+  const ui = SpreadsheetApp.getUi();
+  const wb = getEnquiriesWorkbook_();
+  let sheet = wb.getSheetByName('Enquiries');
+  if (!sheet) {
+    sheet = getEnquiriesSheet_(wb);
+    ui.alert('Created new Enquiries sheet with the clean 10-column layout.');
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+  const lastCol = Math.max(sheet.getLastColumn(), 16);
+  const oldHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+
+  // Backup current sheet so no genuine data can ever be lost
+  const tz = Session.getScriptTimeZone() || 'GMT';
+  const backupName = 'Enquiries_Backup_' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd_HHmmss');
+  let backupSheet = wb.getSheetByName(backupName);
+  if (!backupSheet) {
+    backupSheet = sheet.copyTo(wb);
+    backupSheet.setName(backupName);
+  }
+
+  // Find column indexes in current sheet dynamically
+  const colMap = {};
+  for (var c = 0; c < oldHeaders.length; c++) {
+    const h = String(oldHeaders[c] || '').toLowerCase().trim();
+    if (!h) continue;
+    if (h.includes('submitted')) colMap.submitted = c;
+    else if (h.includes('player name') || h === 'name') colMap.name = c;
+    else if (h.includes('player id') || h === 'id' || h.includes('game id')) colMap.id = c;
+    else if (h.includes('power')) colMap.power = c;
+    else if (h.includes('current kingdom') || h.includes('kingdom')) colMap.kingdom = c;
+    else if (h.includes('current alliance')) colMap.currAlliance = c;
+    else if (h.includes('preferred allian')) colMap.prefAlliance = c;
+    else if (h.includes('tg') || h.includes('center')) colMap.tgCenter = c;
+    else if (h.includes('fc') || h.includes('stats')) colMap.fcStats = c;
+    else if (h.includes('discord')) colMap.discord = c;
+    else if (h.includes('message')) colMap.message = c;
+  }
+
+  const newHeaders = [
+    'Submitted at',
+    'Player Name',
+    'Game ID',
+    'Current Kingdom',
+    'Power',
+    'Current Alliance',
+    'Preferred Alliance',
+    'TG Center Level',
+    'Discord Username',
+    'Message'
+  ];
+
+  let cleanedRows = [];
+  let spamCount = 0;
+
+  if (lastRow >= 2) {
+    const data = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+    for (var i = 0; i < data.length; i++) {
+      const row = data[i];
+      const rowStr = row.map(function(cell) { return String(cell || ''); }).join(' ').toLowerCase();
+      const name = String(colMap.name !== undefined ? row[colMap.name] : row[1] || '').trim();
+      const id = String(colMap.id !== undefined ? row[colMap.id] : row[2] || '').trim();
+
+      // Check if empty row
+      if (!name && !id && !rowStr.trim()) {
+        continue;
+      }
+
+      // Detect spam patterns
+      const isSpam = 
+        /^PLAYER\s*\d+$/i.test(name) ||
+        /^TEST\s*\d+$/i.test(name) ||
+        /^\d{4}\s*1414$/.test(id) ||
+        rowStr.includes('stop spam') ||
+        rowStr.includes('stopspam') ||
+        rowStr.includes('spamming my sheets');
+
+      if (isSpam) {
+        spamCount++;
+        continue;
+      }
+
+      // Map genuine applicant data to clean 10 columns
+      const submitted = (colMap.submitted !== undefined ? row[colMap.submitted] : row[0]) || new Date();
+      const kingdom = (colMap.kingdom !== undefined ? row[colMap.kingdom] : row[5]) || '';
+      const power = (colMap.power !== undefined ? row[colMap.power] : row[3]) || '';
+      const currAlliance = (colMap.currAlliance !== undefined ? row[colMap.currAlliance] : row[6]) || '';
+      const prefAlliance = (colMap.prefAlliance !== undefined ? row[colMap.prefAlliance] : row[11]) || '';
+
+      // For TG Center Level, check TG column first, then FC/stats column
+      let tgLevel = '';
+      if (colMap.tgCenter !== undefined && row[colMap.tgCenter]) {
+        tgLevel = row[colMap.tgCenter];
+      } else if (colMap.fcStats !== undefined && row[colMap.fcStats]) {
+        tgLevel = row[colMap.fcStats];
+      } else if (row[7]) {
+        tgLevel = row[7];
+      } else if (row[4]) {
+        tgLevel = row[4];
+      }
+
+      const discord = (colMap.discord !== undefined ? row[colMap.discord] : (row[14] || row[13])) || '';
+      const message = (colMap.message !== undefined ? row[colMap.message] : (row[15] || row[14])) || '';
+
+      cleanedRows.push([
+        submitted,
+        name,
+        id,
+        kingdom,
+        power,
+        currAlliance,
+        prefAlliance,
+        tgLevel,
+        discord,
+        message
+      ]);
+    }
+  }
+
+  // Clear sheet content and format
+  sheet.clear();
+  sheet.clearFormats();
+
+  // Write new headers
+  sheet.getRange(1, 1, 1, newHeaders.length).setValues([newHeaders]);
+  sheet.getRange(1, 1, 1, newHeaders.length)
+    .setFontWeight('bold')
+    .setBackground('#1e4620')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
+
+  // Write cleaned genuine applicant rows
+  if (cleanedRows.length > 0) {
+    sheet.getRange(2, 1, cleanedRows.length, newHeaders.length).setValues(cleanedRows);
+    sheet.getRange(2, 1, cleanedRows.length, newHeaders.length).setVerticalAlignment('middle');
+  }
+
+  // Trim excess columns
+  const totalCols = sheet.getMaxColumns();
+  if (totalCols > newHeaders.length) {
+    sheet.deleteColumns(newHeaders.length + 1, totalCols - newHeaders.length);
+  }
+
+  sheet.setFrozenRows(1);
+  for (var c = 1; c <= newHeaders.length; c++) {
+    sheet.autoResizeColumn(c);
+  }
+
+  ui.alert(
+    '✨ Enquiries Sheet Successfully Cleaned & Modernized!\n\n' +
+    '• Removed ' + spamCount + ' spam rows.\n' +
+    '• Preserved ' + cleanedRows.length + ' genuine applicants.\n' +
+    '• Reorganized into 10 clean columns matching your new application form.\n' +
+    '• Created safety backup in tab: "' + backupName + '".'
+  );
+}
+
 function cleanSpamEnquiries() {
   const ui = SpreadsheetApp.getUi();
   const wb = getEnquiriesWorkbook_();
@@ -338,7 +504,8 @@ function cleanSpamEnquiries() {
       /^TEST\s*\d+$/i.test(name) ||
       /^\d{4}\s*1414$/.test(id) ||
       rowStr.includes('stop spam') ||
-      rowStr.includes('stopspam');
+      rowStr.includes('stopspam') ||
+      rowStr.includes('spamming my sheets');
 
     if (isSpam) {
       sheet.deleteRow(rowNum);
@@ -675,13 +842,15 @@ function getEnquiriesSheet_(wb) {
   if (!sheet) {
     sheet = wb.insertSheet('Enquiries');
     sheet.appendRow([
-      'Submitted at', 'Player name', 'Player ID', 'Power', 'Current kingdom',
-      'Current alliance', 'TG Center level', 'Archers level', 'Infantry level', 'Cavalry level',
-      'Preferred alliance', 'Preferred event time',
-      'Playstyle', 'Discord username', 'Message'
+      'Submitted at', 'Player Name', 'Game ID', 'Current Kingdom', 'Power',
+      'Current Alliance', 'Preferred Alliance', 'TG Center Level',
+      'Discord Username', 'Message'
     ]);
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, 15).setFontWeight('bold');
+    sheet.getRange(1, 1, 1, 10)
+      .setFontWeight('bold')
+      .setBackground('#1e4620')
+      .setFontColor('#ffffff');
   }
   return sheet;
 }
