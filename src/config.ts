@@ -11,6 +11,10 @@ const envUrl = (import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || '').trim();
 export const GOOGLE_APPS_SCRIPT_URL =
   (envUrl && !STALE_URLS.includes(envUrl)) ? envUrl : ACTIVE_CMS_URL;
 
+// Vercel Serverless proxy routes (URL completely hidden from browser network tab)
+export const CMS_API_ENDPOINT = '/api/cms';
+export const APPLY_API_ENDPOINT = '/api/apply';
+
 const DEFAULT_RECAPTCHA_SITE_KEY = '6LeBsfgtAAAAACCwrgTjKXZu-jSPc2RiYu22uCqV';
 
 export const RECAPTCHA_SITE_KEY =

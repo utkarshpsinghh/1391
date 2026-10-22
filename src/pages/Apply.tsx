@@ -4,7 +4,7 @@ import { Send } from 'lucide-react';
 import { PageHero } from '../components/PageHero';
 import { Button } from '../components/Button';
 import { useKingdom } from '../context/KingdomContext';
-import { GOOGLE_APPS_SCRIPT_URL, RECAPTCHA_SITE_KEY } from '../config';
+import { GOOGLE_APPS_SCRIPT_URL, APPLY_API_ENDPOINT, RECAPTCHA_SITE_KEY } from '../config';
 
 declare global {
   interface Window {
@@ -131,24 +131,27 @@ export const Apply: React.FC = () => {
     };
 
     try {
-      // POST with text/plain prevents CORS preflight and allows Apps Script to respond
-      await fetch(endpoint, {
+      // 1. Submit via Vercel API proxy (Google Apps Script URL 100% hidden)
+      const res = await fetch(APPLY_API_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });
-
+      const data = await res.json().catch(() => null);
+      if (data && data.ok === false) {
+        setErr(data.error || 'The kingdom ledger could not verify the application.');
+        return;
+      }
       localStorage.setItem('k1391-application', JSON.stringify(form));
       localStorage.setItem('k1391-enquiry-sent-at', String(Date.now()));
       setSent(true);
     } catch {
-      // Fallback for browsers that enforce strict opaque redirects
+      // 2. Direct fallback to Google Apps Script if proxy route is unavailable
       try {
         await fetch(endpoint, {
           method: 'POST',
-          mode: 'no-cors',
           headers: {
             'Content-Type': 'text/plain;charset=utf-8'
           },
@@ -158,9 +161,24 @@ export const Apply: React.FC = () => {
         localStorage.setItem('k1391-enquiry-sent-at', String(Date.now()));
         setSent(true);
       } catch {
-        setErr(
-          'The messenger could not reach the kingdom ledger. Please check your internet connection and try again shortly.'
-        );
+        // 3. Fallback for strict opaque redirect browsers
+        try {
+          await fetch(endpoint, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+              'Content-Type': 'text/plain;charset=utf-8'
+            },
+            body: JSON.stringify(payload)
+          });
+          localStorage.setItem('k1391-application', JSON.stringify(form));
+          localStorage.setItem('k1391-enquiry-sent-at', String(Date.now()));
+          setSent(true);
+        } catch {
+          setErr(
+            'The messenger could not reach the kingdom ledger. Please check your internet connection and try again shortly.'
+          );
+        }
       }
     } finally {
       setSending(false);

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { KingdomData, Alliance, emptyKingdomData, emptySettings } from '../data';
-import { GOOGLE_APPS_SCRIPT_URL } from '../config';
+import { GOOGLE_APPS_SCRIPT_URL, CMS_API_ENDPOINT } from '../config';
 
 interface KingdomContextType {
   data: KingdomData;
@@ -121,22 +121,33 @@ export const KingdomProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const targetUrl = `${endpoint}${endpoint.includes('?') ? '&' : '?'}t=${Date.now()}`;
     let jsonResult: any = null;
 
-    // 1. Try standard CORS fetch first
+    // 1. Try Vercel Serverless proxy first (Google Script URL completely hidden)
     try {
-      console.log('[Kingdom] Attempting fetch to:', targetUrl);
-      const res = await fetch(targetUrl, { method: 'GET' });
-      jsonResult = await res.json();
-    } catch (fetchErr) {
-      console.warn('[Kingdom] Direct fetch failed, trying JSONP fallback:', fetchErr);
-      // 2. Fall back to JSONP (works through all browser security / CORS restrictions)
+      const res = await fetch(CMS_API_ENDPOINT);
+      if (res.ok) {
+        jsonResult = await res.json();
+      } else {
+        throw new Error('Proxy status ' + res.status);
+      }
+    } catch (proxyErr) {
+      console.warn('[Kingdom] Proxy fetch failed, trying direct Google Script:', proxyErr);
+      // 2. Direct CORS fetch fallback
       try {
-        jsonResult = await fetchJsonp(targetUrl);
-        console.log('[Kingdom] JSONP fallback succeeded!');
-      } catch (jsonpErr) {
-        console.error('[Kingdom] Both fetch and JSONP failed:', jsonpErr);
-        setError('Could not connect to Google Sheets. Please check your internet or adblocker.');
-        setLoading(false);
-        return;
+        console.log('[Kingdom] Attempting direct fetch to:', targetUrl);
+        const res = await fetch(targetUrl, { method: 'GET' });
+        jsonResult = await res.json();
+      } catch (fetchErr) {
+        console.warn('[Kingdom] Direct fetch failed, trying JSONP fallback:', fetchErr);
+        // 3. Fall back to JSONP (works through all browser security / CORS restrictions)
+        try {
+          jsonResult = await fetchJsonp(targetUrl);
+          console.log('[Kingdom] JSONP fallback succeeded!');
+        } catch (jsonpErr) {
+          console.error('[Kingdom] Both fetch and JSONP failed:', jsonpErr);
+          setError('Could not connect to Google Sheets. Please check your internet or adblocker.');
+          setLoading(false);
+          return;
+        }
       }
     }
 
